@@ -1,0 +1,11 @@
+// Bootstrap schema (PR1): generator + datasource only.
+// Menu/Category/Item/Variant/Modifier/Allergen/Settings models are added in a
+// later slice (PR3 / 2b). No tenantId on any model — single-tenant by design.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
