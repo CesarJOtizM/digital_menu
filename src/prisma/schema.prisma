@@ -1,6 +1,16 @@
-// Bootstrap schema (PR1): generator + datasource only.
-// Menu/Category/Item/Variant/Modifier/Allergen/Settings models are added in a
-// later slice (PR3 / 2b). No tenantId on any model — single-tenant by design.
+// Menu persistence schema (PR3 / Slice 2b).
+//
+// Single-tenant by design: NO tenantId / brand column on ANY model.
+// Display-only: NO cart / checkout / order models.
+// Money: every price/delta is an integer column in centavos (Int), never float.
+//
+// Connection wiring (Prisma 7 + Supabase):
+//   - Runtime client uses the POOLED DATABASE_URL (port 6543, pgbouncer) via the
+//     @prisma/adapter-pg driver adapter (see src/shared/infrastructure/prisma/client.ts).
+//   - Prisma CLI / migrations use the DIRECT connection (DIRECT_URL, port 5432)
+//     configured as datasource.url in prisma.config.ts.
+//   - The schema datasource declares only `provider` (Prisma 7 driver-adapter mode);
+//     url/directUrl are NOT valid here and live in prisma.config.ts.
 
 generator client {
   provider = "prisma-client-js"
@@ -8,4 +18,154 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+/// Top-level menu. A single published Menu is expected per deploy; slug is kept
+/// for future multi-menu support but stays single-tenant (no brand scoping).
+model Menu {
+  id         String       @id @default(cuid())
+  name       String
+  slug       String       @unique
+  status     String       @default("draft")
+  categories Category[]
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  @@index([status])
+}
+
+/// Ordered group of items within a Menu. Optional availability window gates all
+/// of its items. Availability is persisted as lean columns (default: always on).
+model Category {
+  id          String   @id @default(cuid())
+  menuId      String
+  menu        Menu     @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  name        String
+  slug        String
+  sortOrder   Int      @default(0)
+  description String?
+  // AvailabilityWindow (null on all three => always available):
+  availDays   Int?     // bitmask of weekdays, bit 0 = Sunday .. bit 6 = Saturday
+  availStart  Int?     // inclusive start, minute-of-day 0..1440
+  availEnd    Int?     // exclusive end, minute-of-day 0..1440
+  items       Item[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([menuId])
+  @@index([menuId, sortOrder])
+}
+
+/// A menu item. basePrice + variant prices + modifier deltas are ALL centavos Int.
+/// Image is stored as nullable path/url columns reconstituted into an ImageSource.
+model Item {
+  id            String          @id @default(cuid())
+  categoryId    String
+  category      Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  name          String
+  slug          String
+  description   String          @default("")
+  basePrice     Int             // centavos
+  imageUrl      String?         // external image source
+  imagePath     String?         // local stored image source
+  active        Boolean         @default(true)
+  sortOrder     Int             @default(0)
+  // AvailabilityWindow (null on all three => always available):
+  availDays     Int?
+  availStart    Int?
+  availEnd      Int?
+  variants      Variant[]
+  modifierGroups ModifierGroup[]
+  allergens     ItemAllergen[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([categoryId])
+  @@index([categoryId, sortOrder])
+  @@index([active])
+  @@index([slug])
+}
+
+/// A purchasable size/option of an Item. price is ABSOLUTE centavos (overrides
+/// the item base price when selected, not additive).
+model Variant {
+  id        String   @id @default(cuid())
+  itemId    String
+  item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  label     String
+  price     Int      // absolute centavos
+  sortOrder Int      @default(0)
+
+  @@index([itemId])
+  @@index([itemId, sortOrder])
+}
+
+/// Item-local group of modifier options with min/max selection rules.
+model ModifierGroup {
+  id        String           @id @default(cuid())
+  itemId    String
+  item      Item             @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  name      String
+  min       Int              @default(0)
+  max       Int              @default(0)
+  sortOrder Int              @default(0)
+  options   ModifierOption[]
+
+  @@index([itemId])
+  @@index([itemId, sortOrder])
+}
+
+/// A selectable choice inside a ModifierGroup. priceDelta is centavos ADDED to
+/// the effective price when selected (default 0).
+model ModifierOption {
+  id         String        @id @default(cuid())
+  groupId    String
+  group      ModifierGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  name       String
+  priceDelta Int           @default(0) // centavos
+  sortOrder  Int           @default(0)
+
+  @@index([groupId])
+  @@index([groupId, sortOrder])
+}
+
+/// Allergen reference vocabulary. Items reference allergens by id through the
+/// ItemAllergen join table (no shared FK in the domain, ids only).
+model Allergen {
+  id    String         @id @default(cuid())
+  name  String
+  slug  String         @unique
+  icon  String?
+  items ItemAllergen[]
+
+  @@index([slug])
+}
+
+/// Join table linking Items to Allergens (many-to-many by id).
+model ItemAllergen {
+  itemId     String
+  item       Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  allergenId String
+  allergen   Allergen @relation(fields: [allergenId], references: [id], onDelete: Cascade)
+
+  @@id([itemId, allergenId])
+  @@index([allergenId])
+}
+
+/// Per-deploy single-tenant settings singleton (id always "default"). Drives
+/// branding, currency/locale/timezone, and currency-symbol display toggle.
+model Settings {
+  id                 String   @id @default("default")
+  restaurantName     String
+  logoUrl            String?
+  logoPath           String?
+  primaryColor       String
+  secondaryColor     String?
+  currency           String
+  locale             String
+  timezone           String
+  showCurrencySymbol Boolean  @default(true)
+  landing            Json?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }
