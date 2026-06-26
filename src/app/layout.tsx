@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, DM_Sans } from "next/font/google";
+import { buildThemeStyle } from "@/config/domain";
+import { getConfig } from "@/config/infrastructure";
 import "./globals.css";
 
 const heading = Cormorant_Garamond({
@@ -16,19 +18,33 @@ const body = DM_Sans({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  title: "Digital Menu",
-  description: "Digital restaurant menu",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const config = await getConfig();
+  return {
+    title: config.restaurantName,
+    description: `${config.restaurantName} — digital menu`,
+  };
+}
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const config = await getConfig();
+  const themeStyle = buildThemeStyle({
+    primaryColor: config.primaryColor,
+    secondaryColor: config.secondaryColor,
+  });
+
   return (
-    <html lang="en">
-      <body className={`${heading.variable} ${body.variable}`}>{children}</body>
+    <html lang={config.locale}>
+      <body
+        className={`${heading.variable} ${body.variable}`}
+        style={themeStyle}
+      >
+        {children}
+      </body>
     </html>
   );
 }
