@@ -58,6 +58,18 @@ describe("mapSettingsRowToConfig", () => {
       expect(config.landingEnabled).toBe(true);
     });
 
+    it("carries the raw landing blob through for the landing view-model", () => {
+      const row: SettingsRow = {
+        ...fullRow(),
+        landing: { enabled: true, hero: { tagline: "Cocina de brasa" } },
+      };
+      const config = mapSettingsRowToConfig(row);
+      expect(config.landing).toEqual({
+        enabled: true,
+        hero: { tagline: "Cocina de brasa" },
+      });
+    });
+
     it("falls back to logoPath when logoUrl is absent", () => {
       const row: SettingsRow = {
         ...fullRow(),

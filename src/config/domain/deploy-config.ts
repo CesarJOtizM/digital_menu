@@ -22,4 +22,10 @@ export interface DeployConfig {
   readonly showCurrencySymbol: boolean;
   /** When true, the root route renders a landing page instead of redirecting. */
   readonly landingEnabled: boolean;
+  /**
+   * Raw landing JSON blob (hero/about/hours/location/social/cta) as persisted on
+   * the Settings singleton. Typed `unknown` because it comes from a JSON column;
+   * the landing view-model parses it defensively. `null` when unset.
+   */
+  readonly landing: unknown;
 }

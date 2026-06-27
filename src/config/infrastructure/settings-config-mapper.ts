@@ -35,6 +35,7 @@ export const DEFAULT_DEPLOY_CONFIG: DeployConfig = {
   timezone: "UTC",
   showCurrencySymbol: true,
   landingEnabled: false,
+  landing: null,
 };
 
 function resolveLogo(row: SettingsRow): string | null {
@@ -70,5 +71,6 @@ export function mapSettingsRowToConfig(row: SettingsRow | null): DeployConfig {
     timezone: row.timezone,
     showCurrencySymbol: row.showCurrencySymbol,
     landingEnabled: resolveLandingEnabled(row.landing),
+    landing: row.landing ?? null,
   };
 }
