@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "db:seed": "tsx src/prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
@@ -40,6 +41,7 @@
     "prettier": "^3",
     "prisma": "^7",
     "tailwindcss": "^4",
+    "tsx": "^4.22.4",
     "typescript": "^6",
     "vite-tsconfig-paths": "^6",
     "vitest": "^4"

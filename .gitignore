@@ -36,6 +36,8 @@ azahar-menu-reference.jpeg
 # uploads (user content)
 public/uploads/items/*
 !public/uploads/items/.gitkeep
+# dev seed placeholder (committed; referenced by src/prisma/seed.ts)
+!public/uploads/items/placeholder.svg
 
 # prisma
 src/prisma/generated/
