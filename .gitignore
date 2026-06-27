@@ -29,6 +29,10 @@ yarn-error.log*
 next-env.d.ts
 bun.lock
 
+# dev/tool artifacts (never commit)
+.playwright-mcp/
+azahar-menu-reference.jpeg
+
 # uploads (user content)
 public/uploads/items/*
 !public/uploads/items/.gitkeep
