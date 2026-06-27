@@ -6,9 +6,6 @@ import { prisma } from "@/shared/infrastructure/prisma/client";
 import { buildMenuViewModel, MenuPage } from "@/menu/presentation";
 import type { Menu } from "@/menu/domain";
 
-// Availability is resolved at request time, so the menu is rendered dynamically.
-export const dynamic = "force-dynamic";
-
 const resolver = new AvailabilityResolver();
 
 /**
@@ -29,12 +26,13 @@ async function loadPublishedMenu(): Promise<Menu | null> {
 }
 
 /**
- * Public, read-only menu page (RSC). Fetches config (branding, formatter,
- * timezone) and the published menu, projects the domain aggregate into
- * presentation props with availability resolved at the current instant, then
- * renders the Azahar-style page. Display-only — no cart/checkout.
+ * Renders the public, read-only Azahar-style menu (RSC). Fetches config
+ * (branding, formatter, timezone) and the published menu, projects the domain
+ * aggregate into presentation props with availability resolved at the current
+ * instant. Shared by `/menu` (always) and `/` (when the landing is disabled), so
+ * the menu renders at both with no redirect hop. Display-only — no cart/checkout.
  */
-export default async function PublicMenuPage() {
+export async function MenuView() {
   const [config, menu] = await Promise.all([getConfig(), loadPublishedMenu()]);
   const formatPrice = createPriceFormatter({
     locale: config.locale,

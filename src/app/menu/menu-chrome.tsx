@@ -3,12 +3,12 @@ import { buildThemeStyle } from "@/config/domain";
 import { getConfig } from "@/config/infrastructure";
 
 /**
- * Layout for the public menu route group. Applies the config-driven theme
- * (`buildThemeStyle`) to the menu wrapper so the menu surface, accents and
- * footer all derive from the deploy's brand color, and renders the dark
- * Azahar-style footer with simple nav. Single-tenant: one deploy, one config.
+ * The Azahar-style menu chrome: a themed cream surface wrapper plus the dark
+ * accent footer. Shared by the `/menu` layout and by the root `/` when the
+ * landing is disabled, so the menu looks identical at both paths. The theme
+ * (`buildThemeStyle`) derives from the deploy's brand color. Single-tenant.
  */
-export default async function MenuLayout({
+export async function MenuChrome({
   children,
 }: Readonly<{ children: ReactNode }>) {
   const config = await getConfig();
