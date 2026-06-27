@@ -2,9 +2,14 @@ import { createPriceFormatter } from "@/config/domain";
 import { getConfig } from "@/config/infrastructure";
 import { AvailabilityResolver } from "@/menu/domain";
 import { PrismaMenuRepository } from "@/menu/infrastructure/persistence";
+import { loadAllergenNameMap } from "@/menu/infrastructure/persistence/load-allergens";
 import { prisma } from "@/shared/infrastructure/prisma/client";
+import { resolveRootView } from "@/landing/presentation";
 import { buildMenuViewModel, MenuPage } from "@/menu/presentation";
+import type { HomeLinkView } from "@/menu/presentation";
 import type { Menu } from "@/menu/domain";
+
+const HOME_LINK: HomeLinkView = { label: "Inicio", href: "/" };
 
 const resolver = new AvailabilityResolver();
 
@@ -33,12 +38,17 @@ async function loadPublishedMenu(): Promise<Menu | null> {
  * the menu renders at both with no redirect hop. Display-only — no cart/checkout.
  */
 export async function MenuView() {
-  const [config, menu] = await Promise.all([getConfig(), loadPublishedMenu()]);
+  const [config, menu, allergenNames] = await Promise.all([
+    getConfig(),
+    loadPublishedMenu(),
+    loadAllergenNameMap(),
+  ]);
   const formatPrice = createPriceFormatter({
     locale: config.locale,
     currency: config.currency,
     showSymbol: config.showCurrencySymbol,
   });
+  const homeLink = resolveRootView(config) === "landing" ? HOME_LINK : null;
 
   if (!menu) {
     return (
@@ -47,6 +57,7 @@ export async function MenuView() {
           restaurantName: config.restaurantName,
           isEmpty: true,
           categories: [],
+          homeLink,
         }}
       />
     );
@@ -57,7 +68,8 @@ export async function MenuView() {
     now: new Date(),
     timezone: config.timezone,
     formatPrice,
+    allergenNames,
   });
 
-  return <MenuPage viewModel={viewModel} />;
+  return <MenuPage viewModel={{ ...viewModel, homeLink }} />;
 }

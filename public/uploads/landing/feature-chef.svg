@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1000" viewBox="0 0 800 1000" role="img" aria-label="Chef portrait placeholder">
+  <rect width="800" height="1000" fill="#2A1810"/>
+  <circle cx="400" cy="360" r="160" fill="#C0552E" opacity="0.35"/>
+  <rect x="220" y="560" width="360" height="280" rx="12" fill="#F5EFE6" opacity="0.08"/>
+  <text x="400" y="920" text-anchor="middle" fill="#F5EFE6" font-family="Georgia, serif" font-size="28" opacity="0.75">Chef Atisha Pascual</text>
+</svg>

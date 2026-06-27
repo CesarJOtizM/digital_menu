@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-label="Hero slide placeholder">
+  <rect width="1600" height="900" fill="#2A1810"/>
+  <rect x="480" y="220" width="640" height="460" rx="24" fill="#C0552E" opacity="0.25"/>
+  <text x="800" y="470" text-anchor="middle" fill="#F5EFE6" font-family="Georgia, serif" font-size="38" opacity="0.6">Tapas &amp; Grill</text>
+</svg>

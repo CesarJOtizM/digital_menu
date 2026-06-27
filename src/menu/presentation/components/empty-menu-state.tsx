@@ -7,10 +7,10 @@ export function EmptyMenuState() {
   return (
     <div className="flex flex-col items-center justify-center gap-3 py-24 text-center">
       <p className="font-heading text-2xl font-medium text-stone-700">
-        Our menu is being prepared
+        Estamos preparando la carta
       </p>
       <p className="max-w-md text-sm text-stone-500">
-        Please check back soon — we&apos;re plating something special.
+        Vuelve pronto — estamos montando algo especial.
       </p>
     </div>
   );

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-label="Hero slide placeholder">
+  <rect width="1600" height="900" fill="#1B2A4A"/>
+  <ellipse cx="800" cy="520" rx="420" ry="120" fill="#C0552E" opacity="0.35"/>
+  <text x="800" y="470" text-anchor="middle" fill="#F5EFE6" font-family="Georgia, serif" font-size="38" opacity="0.6">Wood-Fired Plates</text>
+</svg>

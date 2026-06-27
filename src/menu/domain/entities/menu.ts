@@ -1,5 +1,6 @@
 import { Entity, Slug } from "@/shared/domain";
 import { Category } from "./category";
+import { Item } from "./item";
 import { DuplicatePosition } from "../errors";
 
 const MENU_STATUS = {
@@ -83,6 +84,46 @@ export class Menu extends Entity<string> {
       return category!.withPosition(index);
     });
     return new Menu(this.id, this._name, this._slug, this._status, reordered);
+  }
+
+  mapCategory(
+    categoryId: string,
+    transform: (category: Category) => Category,
+  ): Menu {
+    return new Menu(
+      this.id,
+      this._name,
+      this._slug,
+      this._status,
+      this._categories.map((category) =>
+        category.id === categoryId ? transform(category) : category,
+      ),
+    );
+  }
+
+  addCategory(category: Category): Menu {
+    return new Menu(this.id, this._name, this._slug, this._status, [
+      ...this._categories,
+      category,
+    ]);
+  }
+
+  removeCategory(categoryId: string): Menu {
+    return new Menu(
+      this.id,
+      this._name,
+      this._slug,
+      this._status,
+      this._categories.filter((category) => category.id !== categoryId),
+    );
+  }
+
+  findCategory(categoryId: string): Category | undefined {
+    return this._categories.find((category) => category.id === categoryId);
+  }
+
+  findItem(categoryId: string, itemId: string): Item | undefined {
+    return this.findCategory(categoryId)?.findItem(itemId);
   }
 
   private withStatus(status: MenuStatus): Menu {

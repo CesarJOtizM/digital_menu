@@ -7,7 +7,7 @@ describe("EmptyMenuState", () => {
   it("renders a friendly empty-menu message without error", () => {
     render(<EmptyMenuState />);
 
-    expect(screen.getByText(/menu is being prepared/i)).toBeInTheDocument();
+    expect(screen.getByText(/preparando la carta/i)).toBeInTheDocument();
   });
 
   it("renders no menu item, cart or order control in the empty state", () => {

@@ -1,6 +1,6 @@
-export { auth as proxy } from "@/shared/infrastructure/auth";
+export { updateSession as proxy } from "@/shared/infrastructure/supabase/update-session";
 
-// Guard only the admin dashboard. Public menu routes stay unauthenticated.
+// Refresh Supabase sessions and guard the admin dashboard.
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: ["/dashboard/:path*", "/login", "/auth/:path*"],
 };

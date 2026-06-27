@@ -63,13 +63,51 @@ export class Category extends Entity<string> {
 
   /** Return a copy of this category with a new position (immutable reorder). */
   withPosition(position: number): Category {
+    return this.rebuild({ position });
+  }
+
+  withName(name: string, slug: Slug): Category {
+    return this.rebuild({ name, slug });
+  }
+
+  withItems(items: Item[]): Category {
+    return this.rebuild({ items: [...items].sort(byPosition) });
+  }
+
+  mapItem(itemId: string, transform: (item: Item) => Item): Category {
+    return this.withItems(
+      this._items.map((item) => (item.id === itemId ? transform(item) : item)),
+    );
+  }
+
+  addItem(item: Item): Category {
+    return this.withItems([...this._items, item]);
+  }
+
+  removeItem(itemId: string): Category {
+    return this.withItems(this._items.filter((item) => item.id !== itemId));
+  }
+
+  findItem(itemId: string): Item | undefined {
+    return this._items.find((item) => item.id === itemId);
+  }
+
+  private rebuild(
+    patch: Partial<{
+      name: string;
+      slug: Slug;
+      position: number;
+      items: readonly Item[];
+      availability: AvailabilityWindow | undefined;
+    }>,
+  ): Category {
     return new Category(
       this.id,
-      this._name,
-      this._slug,
-      position,
-      this._items,
-      this._availability,
+      patch.name ?? this._name,
+      patch.slug ?? this._slug,
+      patch.position ?? this._position,
+      patch.items ?? this._items,
+      patch.availability ?? this._availability,
     );
   }
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { resolveSignIn } from "./auth-config";
+import { resolveSignIn } from "./resolve-sign-in";
 
 describe("resolveSignIn", () => {
   it("admits a sign-in when the account email is on the allowlist", () => {

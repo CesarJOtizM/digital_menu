@@ -1,6 +1,7 @@
 export {
   buildMenuViewModel,
   type MenuViewModel,
+  type HomeLinkView,
   type CategoryView,
   type ItemView,
   type VariantView,

@@ -96,6 +96,25 @@ describe("buildMenuViewModel", () => {
     expect(vm.categories[0].items).toHaveLength(1);
   });
 
+  it("hides inactive items from the public menu", () => {
+    const menu = makeMenu([
+      makeCategory([
+        makeItem({ id: "active-item", active: true }),
+        makeItem({ id: "inactive-item", name: "Hidden", active: false }),
+      ]),
+    ]);
+
+    const vm = buildMenuViewModel(menu, {
+      resolver,
+      now: NOW,
+      timezone: TZ,
+      formatPrice: bareFormatter,
+    });
+
+    expect(vm.categories[0].items).toHaveLength(1);
+    expect(vm.categories[0].items[0].name).toBe("Croquetas");
+  });
+
   it("formats the effective price as a bare number when the symbol is off", () => {
     const menu = makeMenu([makeCategory([makeItem({ basePrice: Price.create(2450) })])]);
 

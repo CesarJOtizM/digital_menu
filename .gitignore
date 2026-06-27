@@ -38,6 +38,10 @@ public/uploads/items/*
 !public/uploads/items/.gitkeep
 # dev seed placeholder (committed; referenced by src/prisma/seed.ts)
 !public/uploads/items/placeholder.svg
+# dev seed landing placeholders (committed; referenced by src/prisma/seed.ts)
+public/uploads/landing/*
+!public/uploads/landing/.gitkeep
+!public/uploads/landing/*.svg
 
 # prisma
 src/prisma/generated/

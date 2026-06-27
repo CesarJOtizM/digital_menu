@@ -1,4 +1,6 @@
+import type { Metadata } from "next";
 import { getConfig } from "@/config/infrastructure";
+import { buildSiteMetadata } from "@/config/domain";
 import {
   buildLandingViewModel,
   LandingPage,
@@ -7,8 +9,12 @@ import {
 import { MenuChrome } from "./menu/menu-chrome";
 import { MenuView } from "./menu/menu-view";
 
-// The menu branch resolves availability at request time, so render dynamically.
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const config = await getConfig();
+  return buildSiteMetadata(config, { path: "/" });
+}
 
 /**
  * Root route `/` resolver (Option A). Decides by config:
@@ -27,7 +33,7 @@ export default async function RootPage() {
       { restaurantName: config.restaurantName, logo: config.logo },
       config.landing,
     );
-    return <LandingPage viewModel={viewModel} />;
+    return <LandingPage viewModel={viewModel} siteUrl={process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000"} />;
   }
 
   return (

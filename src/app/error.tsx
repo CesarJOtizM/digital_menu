@@ -9,8 +9,8 @@ export default function GlobalError({
 }) {
   return (
     <div>
-      <h2>Something went wrong</h2>
-      <button onClick={() => reset()}>Try again</button>
+      <h2>Algo salió mal</h2>
+      <button onClick={() => reset()}>Intentar de nuevo</button>
     </div>
   );
 }

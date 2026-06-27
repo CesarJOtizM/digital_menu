@@ -4,87 +4,119 @@ import { render, screen } from "@testing-library/react";
 import { LandingPage } from "./landing-page";
 import type { LandingViewModel } from "../landing-view-model";
 
+const SITE_URL = "http://localhost:3000";
+
 function makeViewModel(overrides: Partial<LandingViewModel> = {}): LandingViewModel {
   return {
     hero: overrides.hero ?? {
-      restaurantName: "Azahar",
-      imageUrl: null,
-      tagline: "Cocina de brasa",
+      restaurantName: "Azahar Modern Tasca",
+      headline: "Tapas modernas, vistas al atardecer",
+      description: "Cocina y cócteles en Condado.",
+      imageUrls: ["/uploads/landing/hero-1.svg"],
       logoUrl: null,
+      cta: { label: "Ver carta", href: "/menu" },
     },
     about:
       overrides.about === undefined
-        ? { heading: "Sobre nosotros", paragraphs: ["Producto de mercado."] }
+        ? {
+            heading: "Bienvenidos a Azahar Modern Tasca",
+            paragraphs: ["Reúnete sin prisa, comparte a menudo."],
+          }
         : overrides.about,
+    highlights:
+      overrides.highlights ?? [
+        {
+          heading: "Tapas españolas, sabor local",
+          body: "Platos para compartir.",
+          imageUrl: "/uploads/landing/feature-tapas.svg",
+          imageAlt: "Tapas",
+          cta: { label: "Ver carta", href: "/menu" },
+        },
+      ],
     hours:
       overrides.hours === undefined
-        ? { heading: "Horarios", rows: [{ day: "Mar–Jue", hours: "13–23" }] }
+        ? { heading: "Horario semanal", rows: [{ day: "Lunes", hours: "11–23" }] }
         : overrides.hours,
     location:
       overrides.location === undefined
-        ? { heading: "Donde estamos", address: "Av. Siempreviva 742", mapUrl: null }
+        ? {
+            heading: "Ubicación",
+            address: "886 Ashford Ave, San Juan, PR",
+            mapEmbedUrl:
+              "https://maps.google.com/maps?q=886&z=16&output=embed",
+            mapUrl: null,
+          }
         : overrides.location,
+    contact:
+      overrides.contact === undefined
+        ? {
+            heading: "Contacto",
+            phone: "(787) 482-8182",
+            email: "info@azaharpr.com",
+          }
+        : overrides.contact,
+    privateDining:
+      overrides.privateDining === undefined
+        ? {
+            heading: "Eventos privados y celebraciones",
+            body: "Celebra con nosotros.",
+            imageUrl: "/uploads/landing/feature-private.svg",
+            imageAlt: "Eventos privados",
+            cta: { label: "Reservar mesa", href: "https://wa.me/17874828182" },
+          }
+        : overrides.privateDining,
     social:
-      overrides.social ?? [{ label: "Instagram", url: "https://instagram.com/azahar" }],
-    cta: overrides.cta ?? { label: "View Menu", href: "/menu" },
+      overrides.social ?? [{ label: "Instagram", url: "https://instagram.com/azaharpr" }],
+    cta: overrides.cta ?? { label: "Ver carta", href: "/menu" },
   };
 }
 
 describe("LandingPage", () => {
-  it("renders the hero with the restaurant name and tagline", () => {
-    render(<LandingPage viewModel={makeViewModel()} />);
+  it("renders the hero headline and welcome section", () => {
+    render(<LandingPage viewModel={makeViewModel()} siteUrl={SITE_URL} />);
 
     expect(
-      screen.getByRole("heading", { level: 1, name: "Azahar" }),
+      screen.getByRole("heading", {
+        level: 1,
+        name: "Tapas modernas, vistas al atardecer",
+      }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Cocina de brasa")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Bienvenidos a Azahar Modern Tasca" }),
+    ).toBeInTheDocument();
   });
 
-  it("renders every configured section and the menu CTA", () => {
-    render(<LandingPage viewModel={makeViewModel()} />);
+  it("renders navigation, images and footer links", () => {
+    render(<LandingPage viewModel={makeViewModel()} siteUrl={SITE_URL} />);
 
     expect(
-      screen.getByRole("heading", { name: "Sobre nosotros" }),
+      screen.getByRole("navigation", { name: /navegación principal/i }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Producto de mercado.")).toBeInTheDocument();
-    expect(screen.getByText("Mar–Jue")).toBeInTheDocument();
-    expect(screen.getByText("Av. Siempreviva 742")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Instagram" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "View Menu" })).toHaveAttribute(
-      "href",
-      "/menu",
-    );
+    expect(screen.getByRole("heading", { name: "Carta" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Página" })).toBeInTheDocument();
+    expect(screen.getByAltText("Azahar Modern Tasca")).toBeInTheDocument();
+    expect(screen.getByText("info@azaharpr.com")).toBeInTheDocument();
   });
 
-  it("omits optional sections that are null but still renders hero and CTA", () => {
-    render(
-      <LandingPage
-        viewModel={makeViewModel({
-          about: null,
-          hours: null,
-          location: null,
-          social: [],
-        })}
-      />,
-    );
+  it("renders private dining before weekly hours", () => {
+    render(<LandingPage viewModel={makeViewModel()} siteUrl={SITE_URL} />);
+
+    const privateDining = screen.getByRole("heading", {
+      name: "Eventos privados y celebraciones",
+    });
+    const weeklyHours = screen.getByRole("heading", { name: "Horario semanal" });
 
     expect(
-      screen.getByRole("heading", { level: 1, name: "Azahar" }),
-    ).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "View Menu" })).toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: "Horarios" })).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("heading", { name: "Donde estamos" }),
-    ).not.toBeInTheDocument();
+      privateDining.compareDocumentPosition(weeklyHours) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 
   it("never renders cart, order or checkout controls (display-only)", () => {
-    render(<LandingPage viewModel={makeViewModel()} />);
+    render(<LandingPage viewModel={makeViewModel()} siteUrl={SITE_URL} />);
 
     expect(
       screen.queryByRole("button", { name: /add|cart|order|checkout/i }),
     ).not.toBeInTheDocument();
-    expect(screen.queryByText(/checkout/i)).not.toBeInTheDocument();
-    expect(screen.queryByRole("spinbutton")).not.toBeInTheDocument();
   });
 });

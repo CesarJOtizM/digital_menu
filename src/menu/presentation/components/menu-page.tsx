@@ -1,6 +1,7 @@
 import { CategoryNav } from "./category-nav";
 import { CategorySection } from "./category-section";
 import { EmptyMenuState } from "./empty-menu-state";
+import { ViewHomeLink } from "./view-home-link";
 import type { MenuViewModel } from "../view-model/menu-view-model";
 
 interface MenuPageProps {
@@ -22,10 +23,15 @@ export function MenuPage({ viewModel }: MenuPageProps) {
   }));
 
   return (
-    <main className="animate-menu-enter mx-auto max-w-3xl px-4 py-8 sm:py-12">
+    <main className="animate-menu-enter relative mx-auto max-w-3xl px-4 py-8 sm:py-12">
+      {viewModel.homeLink ? (
+        <div className="absolute left-4 top-6 sm:top-8">
+          <ViewHomeLink homeLink={viewModel.homeLink} />
+        </div>
+      ) : null}
       <header className="mb-8 text-center">
         <p className="text-xs font-medium uppercase tracking-[0.3em] text-stone-400">
-          Menu
+          Carta
         </p>
         <h1 className="menu-brand-name mt-2 font-heading text-4xl font-medium tracking-wide sm:text-5xl">
           {viewModel.restaurantName}

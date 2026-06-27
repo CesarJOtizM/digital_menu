@@ -10,7 +10,7 @@ interface AboutSectionProps {
  */
 export function AboutSection({ about }: AboutSectionProps) {
   return (
-    <section className="mx-auto max-w-2xl px-6 py-20 text-center">
+    <section id="about" className="mx-auto max-w-2xl px-6 py-20 text-center scroll-mt-20">
       <h2 className="font-heading text-3xl font-medium tracking-wide text-stone-800 sm:text-4xl">
         {about.heading}
       </h2>

@@ -128,19 +128,60 @@ export class Item extends Entity<string> {
 
   /** Return a copy of this item with its modifier groups replaced (immutably). */
   replaceModifierGroups(groups: ModifierGroup[]): Item {
+    return this.rebuild({ modifierGroups: groups });
+  }
+
+  withActive(active: boolean): Item {
+    return this.rebuild({ active });
+  }
+
+  toggleActive(): Item {
+    return this.withActive(!this._active);
+  }
+
+  withDetails(details: {
+    name?: string;
+    slug?: Slug;
+    description?: string;
+    basePrice?: Price;
+    active?: boolean;
+    position?: number;
+    variants?: Variant[];
+    modifierGroups?: ModifierGroup[];
+    imageSource?: ImageSource;
+    allergenIds?: string[];
+  }): Item {
+    return this.rebuild(details);
+  }
+
+  private rebuild(
+    patch: Partial<{
+      name: string;
+      slug: Slug;
+      description: string;
+      basePrice: Price;
+      imageSource: ImageSource;
+      active: boolean;
+      position: number;
+      allergenIds: readonly string[];
+      variants: readonly Variant[];
+      modifierGroups: readonly ModifierGroup[];
+      availability: AvailabilityWindow | undefined;
+    }>,
+  ): Item {
     return new Item(
       this.id,
-      this._name,
-      this._slug,
-      this._description,
-      this._basePrice,
-      this._imageSource,
-      this._active,
-      this._position,
-      this._allergenIds,
-      this._variants,
-      [...groups].sort(byPosition),
-      this._availability,
+      patch.name ?? this._name,
+      patch.slug ?? this._slug,
+      patch.description ?? this._description,
+      patch.basePrice ?? this._basePrice,
+      patch.imageSource ?? this._imageSource,
+      patch.active ?? this._active,
+      patch.position ?? this._position,
+      patch.allergenIds ?? this._allergenIds,
+      patch.variants ?? this._variants,
+      patch.modifierGroups ?? this._modifierGroups,
+      patch.availability ?? this._availability,
     );
   }
 

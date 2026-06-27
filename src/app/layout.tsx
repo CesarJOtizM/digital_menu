@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, DM_Sans } from "next/font/google";
-import { buildThemeStyle } from "@/config/domain";
+import { buildSiteMetadata, buildThemeStyle } from "@/config/domain";
 import { getConfig } from "@/config/infrastructure";
 import "./globals.css";
 
@@ -20,10 +20,7 @@ const body = DM_Sans({
 
 export async function generateMetadata(): Promise<Metadata> {
   const config = await getConfig();
-  return {
-    title: config.restaurantName,
-    description: `${config.restaurantName} — digital menu`,
-  };
+  return buildSiteMetadata(config);
 }
 
 export default async function RootLayout({

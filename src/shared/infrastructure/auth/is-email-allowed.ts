@@ -3,8 +3,8 @@
  *
  * The allowlist is sourced from the `ALLOWED_EMAILS` env var (comma-separated)
  * and parsed by {@link parseAllowedEmails}. {@link isEmailAllowed} is the only
- * decision the NextAuth `signIn` callback delegates to, so it stays pure and
- * exhaustively testable — no I/O, no env reads, no NextAuth coupling.
+ * decision the auth layer delegates to, so it stays pure and exhaustively
+ * testable — no I/O, no env reads, no Supabase coupling.
  */
 
 function normalizeEmail(value: string): string {

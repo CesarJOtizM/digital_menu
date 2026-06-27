@@ -18,9 +18,10 @@
  *
  * ── Landing JSON shape ──────────────────────────────────────────────────────
  * buildLandingViewModel() reads Settings.landing defensively. The blob shape is:
- *   { enabled, hero:{image,tagline}, about:{heading,body[]},
- *     hours:{heading,schedule:[{day,hours}]},
- *     location:{heading,address,mapUrl}, social:[{label,url}], cta:{label} }
+ *   { enabled, hero:{image,headline,description,cta}, about:{heading,body[]},
+ *     highlights:[{heading,body,cta?}], hours:{heading,schedule[]},
+ *     location:{heading,address,mapUrl}, contact:{heading,phone,email},
+ *     privateDining:{heading,body,cta?}, social:[{label,url}], cta:{label,href} }
  * `enabled: true` makes `/` render the landing (resolveRootView) and `/menu` the
  * menu. mapSettingsRowToConfig keys landingEnabled off `landing.enabled === true`.
  *
@@ -50,6 +51,25 @@ const PUBLISHED_STATUS = "published";
 
 /** Local placeholder image (committed at public/uploads/items/placeholder.svg). */
 const PLACEHOLDER_IMAGE_PATH = "/uploads/items/placeholder.svg";
+
+/** Landing placeholders (committed at public/uploads/landing/*.svg). */
+const LANDING_IMAGES = {
+  hero: [
+    "/uploads/landing/hero-1.svg",
+    "/uploads/landing/hero-2.svg",
+    "/uploads/landing/hero-3.svg",
+  ],
+  tapas: "/uploads/landing/feature-tapas.svg",
+  dining: "/uploads/landing/feature-dining.svg",
+  cocktails: "/uploads/landing/feature-cocktails.svg",
+  chef: "/uploads/landing/feature-chef.svg",
+  privateDining: "/uploads/landing/feature-private.svg",
+} as const;
+
+/** WhatsApp reservation links (Azahar front desk). */
+const WHATSAPP_NUMBER = "17874828182";
+const WHATSAPP_RESERVE_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hola, me gustaría reservar una mesa en Azahar Modern Tasca.")}`;
+const WHATSAPP_PRIVATE_DINING_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hola, me gustaría consultar sobre eventos privados en Azahar Modern Tasca.")}`;
 
 /** Weekday bitmask helpers (bit 0 = Sunday .. bit 6 = Saturday). */
 const WEEKDAY = {
@@ -517,40 +537,96 @@ const CATEGORIES: readonly SeedCategory[] = [
 
 const LANDING_BLOB = {
   enabled: true,
+  seo: {
+    title: "Azahar Modern Tasca | Tapas modernas y cócteles en Condado",
+    description:
+      "Tapas españolas con sabor boricua, cócteles de autor y vistas a la laguna en Condado, San Juan. Reserva por WhatsApp y explora nuestra carta digital.",
+    keywords: [
+      "Azahar",
+      "restaurante Condado",
+      "tapas San Juan",
+      "cócteles Condado",
+      "carta digital",
+      "Hilton Garden Inn Condado",
+    ],
+    ogImage: "/uploads/landing/hero-1.svg",
+  },
   hero: {
-    image: PLACEHOLDER_IMAGE_PATH,
-    tagline: "We Have a Wood Burning Grill",
+    images: LANDING_IMAGES.hero,
+    headline: "Tapas modernas, vistas al atardecer",
+    description:
+      "Azahar Modern Tasca trae cocina inspirada en España a Condado: bocados elaborados, sabores locales, cócteles de autor y un ambiente junto a la laguna para tardes largas, drinks al atardecer y noches relajadas.",
+    cta: { label: "Ver carta", href: "/menu" },
   },
   about: {
-    heading: "About Us",
+    heading: "Bienvenidos a Azahar Modern Tasca",
     body: [
-      "All the food that goes on the grill will have a delicious smoky flavor.",
-      "A modern Puerto Rican kitchen serving wood-fired plates, sharing dishes, and craft cocktails in the heart of Condado.",
+      "Ubicados en el Hilton Garden Inn San Juan Condado, Azahar combina el espíritu de una tasca española con el ritmo de Puerto Rico.",
+      "Desde tapas y platos elaborados hasta vinos, cócteles y vistas desde la terraza: un lugar para reunirse sin prisa, compartir a menudo y quedarse hasta el atardecer.",
     ],
   },
+  highlights: [
+    {
+      heading: "Tapas españolas, sabor local",
+      body: "Azahar reimagina la tasca tradicional con platos para compartir — vibrantes, sabrosos y con influencia española y calidez caribeña.",
+      image: LANDING_IMAGES.tapas,
+      cta: { label: "Ver carta", href: "/menu" },
+    },
+    {
+      heading: "Un momento gastronómico en Condado",
+      body: "Una experiencia cálida y pulida en Condado, con platos llenos de sabor, cócteles y un ritmo nocturno relajado.",
+      image: LANDING_IMAGES.dining,
+      cta: { label: "Reservar", href: WHATSAPP_RESERVE_URL },
+    },
+    {
+      heading: "Cócteles con vista",
+      body: "En la barra, Azahar celebra lo social: cócteles de autor, vino, conversación y un ambiente que pasa de tardes tranquilas a noches animadas.",
+      image: LANDING_IMAGES.cocktails,
+      cta: { label: "Ver carta", href: "/menu" },
+    },
+    {
+      heading: "A cargo de la chef Atisha Pascual",
+      body: "La chef Atisha Pascual guía una carta donde técnica española, sabor local y emplatado contemporáneo se unen en una experiencia elegante y acogedora en Condado.",
+      image: LANDING_IMAGES.chef,
+      imageAlt: "Chef Atisha Pascual",
+      cta: { label: "Contáctanos", href: "mailto:info@azaharpr.com" },
+    },
+  ],
   hours: {
-    heading: "Hours",
+    heading: "Horario semanal",
     schedule: [
-      { day: "Monday", hours: "Closed" },
-      { day: "Tuesday", hours: "5:00 PM – 11:00 PM" },
-      { day: "Wednesday", hours: "5:00 PM – 11:00 PM" },
-      { day: "Thursday", hours: "5:00 PM – 11:00 PM" },
-      { day: "Friday", hours: "5:00 PM – 1:00 AM" },
-      { day: "Saturday", hours: "12:00 PM – 1:00 AM" },
-      { day: "Sunday", hours: "12:00 PM – 10:00 PM" },
+      { day: "Domingo", hours: "11:00 AM – 11:00 PM" },
+      { day: "Lunes", hours: "11:00 AM – 11:00 PM" },
+      { day: "Martes", hours: "11:00 AM – 11:00 PM" },
+      { day: "Miércoles", hours: "11:00 AM – 11:00 PM" },
+      { day: "Jueves", hours: "11:00 AM – 11:00 PM" },
+      { day: "Viernes", hours: "11:00 AM – 11:00 PM" },
+      { day: "Sábado", hours: "11:00 AM – 11:00 PM" },
     ],
   },
   location: {
-    heading: "Find Us",
-    address: "1054 Ashford Ave, Condado, San Juan, PR 00907",
-    mapUrl: "https://maps.google.com/?q=Azahar+Condado+San+Juan+PR",
+    heading: "Ubicación",
+    address: "886 Ashford Ave, San Juan, 00907, Puerto Rico",
+    mapUrl: "https://maps.google.com/?q=Azahar+886+Ashford+Ave+San+Juan+PR",
+  },
+  contact: {
+    heading: "Contacto",
+    phone: "(787) 482-8182",
+    email: "info@azaharpr.com",
+  },
+  privateDining: {
+    heading: "Eventos privados y celebraciones",
+    body: "Cumpleaños, reuniones corporativas y ocasiones especiales con cócteles, cocina y ambiente junto a la laguna, adaptados a tu evento.",
+    image: LANDING_IMAGES.privateDining,
+    cta: { label: "Reservar mesa", href: WHATSAPP_PRIVATE_DINING_URL },
   },
   social: [
     { label: "Instagram", url: "https://instagram.com/azaharpr" },
     { label: "Facebook", url: "https://facebook.com/azaharpr" },
   ],
   cta: {
-    label: "View Menu",
+    label: "Ver carta",
+    href: "/menu",
   },
 } as const;
 
@@ -692,14 +768,14 @@ async function seedMenu(prisma: PrismaClient, allergenIdBySlug: Map<string, stri
 
 async function seedSettings(prisma: PrismaClient): Promise<void> {
   const data = {
-    restaurantName: "Azahar",
+    restaurantName: "Azahar Modern Tasca",
     logoUrl: null,
     logoPath: null,
     // Azahar palette: terracotta accent over a warm cream background, navy as secondary.
     primaryColor: "#C0552E",
     secondaryColor: "#1B2A4A",
     currency: "USD",
-    locale: "en-US",
+    locale: "es-PR",
     timezone: "America/Puerto_Rico",
     // Azahar shows bare numbers (no currency symbol) on the menu.
     showCurrencySymbol: false,

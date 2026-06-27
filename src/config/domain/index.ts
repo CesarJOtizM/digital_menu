@@ -9,3 +9,7 @@ export {
   type ThemeBranding,
   type ThemeStyle,
 } from "./build-theme-style";
+export {
+  buildSiteMetadata,
+  type SiteSeoInput,
+} from "./build-site-metadata";

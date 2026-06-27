@@ -52,11 +52,19 @@ export interface CategoryView {
   readonly items: readonly ItemView[];
 }
 
+/** Link back to the landing at `/` when the deploy has landing enabled. */
+export interface HomeLinkView {
+  readonly label: string;
+  readonly href: string;
+}
+
 /** The full public menu shaped for rendering. */
 export interface MenuViewModel {
   readonly restaurantName: string;
   readonly isEmpty: boolean;
   readonly categories: readonly CategoryView[];
+  /** Present when the root route serves the landing; omitted/null otherwise. */
+  readonly homeLink?: HomeLinkView | null;
 }
 
 /** Inputs needed to project a domain Menu into presentation props. */
@@ -149,7 +157,9 @@ function toCategoryView(category: Category, deps: BuildMenuViewModelDeps): Categ
   return {
     id: category.id,
     name: category.name,
-    items: category.items.map((item) => toItemView(item, categoryAvailable, deps)),
+    items: category.items
+      .filter((item) => item.active)
+      .map((item) => toItemView(item, categoryAvailable, deps)),
   };
 }
 

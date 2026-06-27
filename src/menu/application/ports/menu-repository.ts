@@ -12,6 +12,8 @@ export interface MenuRepository {
   findBySlug(slug: string): Promise<Menu | null>;
   /** The single published menu for this deploy, if any. */
   findPublished(): Promise<Menu | null>;
+  /** The menu used for admin edits (published first, else most recently updated). */
+  findForAdmin(): Promise<Menu | null>;
   /** Persist the whole aggregate atomically (upsert). */
   save(menu: Menu): Promise<void>;
 }

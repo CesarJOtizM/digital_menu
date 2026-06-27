@@ -19,7 +19,7 @@ export function CategoryNav({ categories }: CategoryNavProps) {
 
   return (
     <nav
-      aria-label="Menu categories"
+      aria-label="Categorías de la carta"
       className="flex flex-wrap justify-center gap-2 border-y border-stone-200 py-3"
     >
       {categories.map((category) => (

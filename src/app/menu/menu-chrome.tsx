@@ -27,7 +27,7 @@ export async function MenuChrome({
             {config.restaurantName}
           </p>
           <p className="text-xs uppercase tracking-[0.25em] text-white/70">
-            Digital Menu
+            Menú digital
           </p>
         </div>
       </footer>

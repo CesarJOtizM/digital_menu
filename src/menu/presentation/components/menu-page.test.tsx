@@ -28,6 +28,7 @@ function makeViewModel(overrides: Partial<MenuViewModel> = {}): MenuViewModel {
         ],
       },
     ],
+    homeLink: overrides.homeLink ?? null,
   };
 }
 
@@ -72,7 +73,7 @@ describe("MenuPage", () => {
   it("renders the empty state (and no category) when the menu is empty", () => {
     render(<MenuPage viewModel={makeViewModel({ isEmpty: true, categories: [] })} />);
 
-    expect(screen.getByText(/menu is being prepared/i)).toBeInTheDocument();
+    expect(screen.getByText(/preparando la carta/i)).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Appetizers" })).not.toBeInTheDocument();
   });
 
@@ -82,5 +83,23 @@ describe("MenuPage", () => {
     expect(screen.queryByRole("button", { name: /add|cart|order|checkout/i })).not.toBeInTheDocument();
     expect(screen.queryByText(/checkout/i)).not.toBeInTheDocument();
     expect(screen.queryByRole("spinbutton")).not.toBeInTheDocument();
+  });
+
+  it("renders a back link in the corner when the landing is enabled", () => {
+    render(
+      <MenuPage
+        viewModel={makeViewModel({
+          homeLink: { label: "Inicio", href: "/" },
+        })}
+      />,
+    );
+
+    expect(screen.getByRole("link", { name: /inicio/i })).toHaveAttribute("href", "/");
+  });
+
+  it("omits the back link when landing is disabled", () => {
+    render(<MenuPage viewModel={makeViewModel({ homeLink: null })} />);
+
+    expect(screen.queryByRole("link", { name: /inicio/i })).not.toBeInTheDocument();
   });
 });

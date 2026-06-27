@@ -37,6 +37,17 @@ export class PrismaMenuRepository implements MenuRepository {
     return menu ? toDomainMenu(prismaMenuToRow(menu as PrismaMenuWithRelations)) : null;
   }
 
+  async findForAdmin(): Promise<Menu | null> {
+    const published = await this.findPublished();
+    if (published) return published;
+
+    const menu = await this.prisma.menu.findFirst({
+      orderBy: { updatedAt: "desc" },
+      include: menuInclude,
+    });
+    return menu ? toDomainMenu(prismaMenuToRow(menu as PrismaMenuWithRelations)) : null;
+  }
+
   async save(menu: Menu): Promise<void> {
     await this.prisma.$transaction(async (tx) => {
       await tx.menu.upsert({

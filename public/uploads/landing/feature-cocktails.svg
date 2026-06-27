@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" role="img" aria-label="Cocktails placeholder">
+  <rect width="800" height="600" fill="#1B2A4A"/>
+  <path d="M320 420 L400 180 L480 420 Z" fill="none" stroke="#C0552E" stroke-width="8"/>
+  <text x="400" y="500" text-anchor="middle" fill="#F5EFE6" font-family="Georgia, serif" font-size="28" opacity="0.75">Cocktails &amp; Bar</text>
+</svg>

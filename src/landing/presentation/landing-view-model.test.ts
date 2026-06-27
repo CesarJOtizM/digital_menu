@@ -1,200 +1,150 @@
 import { describe, expect, it } from "vitest";
 import { buildLandingViewModel } from "./landing-view-model";
 
-/**
- * Pure projection of the per-deploy branding + the optional `landing` JSON blob
- * (persisted on the Settings singleton) into Azahar-style landing sections.
- *
- * The blob is `unknown` on purpose — it comes straight from a JSON column, so
- * the projection MUST parse defensively and degrade to branding-derived defaults
- * for anything missing. No I/O, no clock: everything is injected.
- */
-
 const BRANDING = {
-  restaurantName: "Azahar",
+  restaurantName: "Azahar Modern Tasca",
   logo: "https://cdn.example.com/azahar.png",
 } as const;
 
 describe("buildLandingViewModel", () => {
   describe("hero", () => {
-    it("uses the configured hero image, tagline and the restaurant name", () => {
+    it("uses headline, description, image slides and hero CTA", () => {
       const vm = buildLandingViewModel(BRANDING, {
         hero: {
-          image: "https://cdn.example.com/hero.jpg",
-          tagline: "Cocina de azahar y brasa",
+          images: [
+            "/uploads/landing/hero-1.svg",
+            "/uploads/landing/hero-2.svg",
+          ],
+          headline: "Modern Tapas, Sunset Views",
+          description: "Lagoon-side dining in Condado.",
+          cta: { label: "View Menu", href: "/menu" },
         },
       });
 
-      expect(vm.hero.restaurantName).toBe("Azahar");
-      expect(vm.hero.imageUrl).toBe("https://cdn.example.com/hero.jpg");
-      expect(vm.hero.tagline).toBe("Cocina de azahar y brasa");
-      expect(vm.hero.logoUrl).toBe("https://cdn.example.com/azahar.png");
+      expect(vm.hero.restaurantName).toBe("Azahar Modern Tasca");
+      expect(vm.hero.headline).toBe("Modern Tapas, Sunset Views");
+      expect(vm.hero.description).toBe("Lagoon-side dining in Condado.");
+      expect(vm.hero.imageUrls).toEqual([
+        "/uploads/landing/hero-1.svg",
+        "/uploads/landing/hero-2.svg",
+      ]);
+      expect(vm.hero.cta).toEqual({ label: "View Menu", href: "/menu" });
     });
 
-    it("falls back to a null hero image and null tagline when absent", () => {
+    it("falls back to tagline as headline for legacy blobs", () => {
+      const vm = buildLandingViewModel(BRANDING, {
+        hero: { tagline: "Cocina de azahar y brasa" },
+      });
+
+      expect(vm.hero.headline).toBe("Cocina de azahar y brasa");
+      expect(vm.hero.imageUrls).toEqual([]);
+    });
+
+    it("falls back to restaurant name when hero copy is absent", () => {
       const vm = buildLandingViewModel(BRANDING, {});
 
-      expect(vm.hero.restaurantName).toBe("Azahar");
-      expect(vm.hero.imageUrl).toBeNull();
-      expect(vm.hero.tagline).toBeNull();
-    });
-
-    it("degrades gracefully when the blob is not an object at all", () => {
-      const vm = buildLandingViewModel(BRANDING, null);
-
-      expect(vm.hero.restaurantName).toBe("Azahar");
-      expect(vm.hero.imageUrl).toBeNull();
-      expect(vm.hero.tagline).toBeNull();
+      expect(vm.hero.headline).toBe("Azahar Modern Tasca");
+      expect(vm.hero.imageUrls).toEqual([]);
     });
   });
 
-  describe("about section", () => {
-    it("exposes the about heading and paragraphs when present", () => {
+  describe("highlights", () => {
+    it("maps feature blocks with images and optional CTAs", () => {
       const vm = buildLandingViewModel(BRANDING, {
-        about: {
-          heading: "Nuestra historia",
-          body: ["Abrimos en 2019.", "Producto de mercado."],
+        highlights: [
+          {
+            heading: "Spanish Tapas, Local Flavor",
+            body: "Plates to share.",
+            image: "/uploads/landing/feature-tapas.svg",
+            cta: { label: "View Menu", href: "/menu" },
+          },
+        ],
+      });
+
+      expect(vm.highlights).toEqual([
+        {
+          heading: "Spanish Tapas, Local Flavor",
+          body: "Plates to share.",
+          imageUrl: "/uploads/landing/feature-tapas.svg",
+          imageAlt: null,
+          cta: { label: "View Menu", href: "/menu" },
         },
-      });
-
-      expect(vm.about).not.toBeNull();
-      expect(vm.about?.heading).toBe("Nuestra historia");
-      expect(vm.about?.paragraphs).toEqual([
-        "Abrimos en 2019.",
-        "Producto de mercado.",
       ]);
-    });
-
-    it("accepts a single string body and normalizes it to one paragraph", () => {
-      const vm = buildLandingViewModel(BRANDING, {
-        about: { body: "Solo un parrafo." },
-      });
-
-      expect(vm.about?.paragraphs).toEqual(["Solo un parrafo."]);
-    });
-
-    it("is null when no about content is configured", () => {
-      const vm = buildLandingViewModel(BRANDING, { hero: {} });
-
-      expect(vm.about).toBeNull();
     });
   });
 
-  describe("hours section", () => {
-    it("maps each day/hours pair in order", () => {
+  describe("contact", () => {
+    it("exposes phone and email when configured", () => {
       const vm = buildLandingViewModel(BRANDING, {
-        hours: {
-          heading: "Horarios",
-          schedule: [
-            { day: "Mar–Jue", hours: "13–23" },
-            { day: "Vie–Sab", hours: "13–00" },
-          ],
+        contact: {
+          heading: "Contact",
+          phone: "(787) 482-8182",
+          email: "info@azaharpr.com",
         },
       });
 
-      expect(vm.hours?.heading).toBe("Horarios");
-      expect(vm.hours?.rows).toEqual([
-        { day: "Mar–Jue", hours: "13–23" },
-        { day: "Vie–Sab", hours: "13–00" },
-      ]);
+      expect(vm.contact).toEqual({
+        heading: "Contact",
+        phone: "(787) 482-8182",
+        email: "info@azaharpr.com",
+      });
     });
 
-    it("drops malformed schedule entries (missing day or hours)", () => {
+    it("is null when no contact details survive parsing", () => {
+      const vm = buildLandingViewModel(BRANDING, { contact: {} });
+
+      expect(vm.contact).toBeNull();
+    });
+  });
+
+  describe("private dining", () => {
+    it("maps the callout section", () => {
       const vm = buildLandingViewModel(BRANDING, {
-        hours: {
-          schedule: [
-            { day: "Lun", hours: "Cerrado" },
-            { day: "Mar" },
-            { hours: "13–23" },
-            "garbage",
-          ],
+        privateDining: {
+          heading: "Private Dining & Celebrations",
+          body: "Host with us.",
+          image: "/uploads/landing/feature-private.svg",
+          cta: {
+            label: "Reserve a Table",
+            href: "https://wa.me/17874828182?text=private",
+          },
         },
       });
 
-      expect(vm.hours?.rows).toEqual([{ day: "Lun", hours: "Cerrado" }]);
-    });
-
-    it("is null when no schedule rows survive parsing", () => {
-      const vm = buildLandingViewModel(BRANDING, {
-        hours: { schedule: ["x", { day: "Mar" }] },
+      expect(vm.privateDining).toEqual({
+        heading: "Private Dining & Celebrations",
+        body: "Host with us.",
+        imageUrl: "/uploads/landing/feature-private.svg",
+        imageAlt: null,
+        cta: {
+          label: "Reserve a Table",
+          href: "https://wa.me/17874828182?text=private",
+        },
       });
-
-      expect(vm.hours).toBeNull();
     });
   });
 
   describe("location section", () => {
-    it("exposes address, mapUrl and heading", () => {
+    it("builds an embed URL from the address and keeps the external map link", () => {
       const vm = buildLandingViewModel(BRANDING, {
         location: {
-          heading: "Donde estamos",
-          address: "Av. Siempreviva 742",
-          mapUrl: "https://maps.example.com/azahar",
+          heading: "Location",
+          address: "886 Ashford Ave, San Juan, PR",
+          mapUrl: "https://maps.google.com/?q=Azahar+Condado",
         },
       });
 
-      expect(vm.location?.heading).toBe("Donde estamos");
-      expect(vm.location?.address).toBe("Av. Siempreviva 742");
-      expect(vm.location?.mapUrl).toBe("https://maps.example.com/azahar");
-    });
-
-    it("keeps the address with a null mapUrl when no map link is set", () => {
-      const vm = buildLandingViewModel(BRANDING, {
-        location: { address: "Av. Siempreviva 742" },
-      });
-
-      expect(vm.location?.address).toBe("Av. Siempreviva 742");
-      expect(vm.location?.mapUrl).toBeNull();
-    });
-
-    it("is null when there is no address", () => {
-      const vm = buildLandingViewModel(BRANDING, {
-        location: { mapUrl: "https://maps.example.com/x" },
-      });
-
-      expect(vm.location).toBeNull();
-    });
-  });
-
-  describe("social links", () => {
-    it("keeps only well-formed { label, url } entries, in order", () => {
-      const vm = buildLandingViewModel(BRANDING, {
-        social: [
-          { label: "Instagram", url: "https://instagram.com/azahar" },
-          { label: "No URL" },
-          { url: "https://no-label.example.com" },
-          { label: "WhatsApp", url: "https://wa.me/123" },
-        ],
-      });
-
-      expect(vm.social).toEqual([
-        { label: "Instagram", url: "https://instagram.com/azahar" },
-        { label: "WhatsApp", url: "https://wa.me/123" },
-      ]);
-    });
-
-    it("is an empty array when no social links are configured", () => {
-      const vm = buildLandingViewModel(BRANDING, {});
-
-      expect(vm.social).toEqual([]);
+      expect(vm.location?.mapEmbedUrl).toContain("output=embed");
+      expect(vm.location?.mapEmbedUrl).toContain("Azahar");
+      expect(vm.location?.mapUrl).toBe("https://maps.google.com/?q=Azahar+Condado");
     });
   });
 
   describe("view-menu CTA", () => {
-    it("uses the configured CTA label and always targets /menu", () => {
-      const vm = buildLandingViewModel(BRANDING, {
-        cta: { label: "Ver la carta" },
-      });
-
-      expect(vm.cta.label).toBe("Ver la carta");
-      expect(vm.cta.href).toBe("/menu");
-    });
-
-    it("defaults the CTA label to 'View Menu' when not configured", () => {
+    it("defaults the CTA label and href to /menu", () => {
       const vm = buildLandingViewModel(BRANDING, {});
 
-      expect(vm.cta.label).toBe("View Menu");
-      expect(vm.cta.href).toBe("/menu");
+      expect(vm.cta).toEqual({ label: "Ver carta", href: "/menu" });
     });
   });
 });

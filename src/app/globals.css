@@ -55,6 +55,30 @@
   animation: menuFadeSlideIn 250ms ease-out;
 }
 
+/* Branded loader — accent ring spinner */
+@keyframes loaderSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loader-spinner {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-full);
+  border: 2px solid color-mix(in srgb, var(--color-accent) 18%, transparent);
+  border-top-color: var(--color-accent);
+  animation: loaderSpin 0.85s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loader-spinner {
+    animation: none;
+    border-color: color-mix(in srgb, var(--color-accent) 35%, transparent);
+    border-top-color: var(--color-accent);
+  }
+}
+
 /* Menu client theme — colors derive from --color-accent on an ancestor */
 .menu-accent-bg {
   background-color: var(--color-accent);

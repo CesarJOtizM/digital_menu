@@ -1,7 +1,18 @@
+import type { Metadata } from "next";
+import { buildSiteMetadata } from "@/config/domain";
+import { getConfig } from "@/config/infrastructure";
 import { MenuView } from "./menu-view";
 
-// Availability is resolved at request time, so the menu is rendered dynamically.
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const config = await getConfig();
+  return buildSiteMetadata(config, {
+    title: "Carta",
+    description: `Explora la carta de ${config.restaurantName} — platos, precios y disponibilidad al instante.`,
+    path: "/menu",
+  });
+}
 
 /**
  * The public menu is ALWAYS reachable here at `/menu`, regardless of whether the

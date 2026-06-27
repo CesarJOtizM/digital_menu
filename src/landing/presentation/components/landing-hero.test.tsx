@@ -6,43 +6,42 @@ import type { LandingHeroView } from "../landing-view-model";
 
 function makeHero(overrides: Partial<LandingHeroView> = {}): LandingHeroView {
   return {
-    restaurantName: overrides.restaurantName ?? "Azahar",
-    imageUrl: overrides.imageUrl ?? null,
-    tagline: overrides.tagline ?? null,
+    restaurantName: overrides.restaurantName ?? "Azahar Modern Tasca",
+    headline: overrides.headline ?? "Modern Tapas, Sunset Views",
+    description: overrides.description ?? "Spanish-inspired dining in Condado.",
+    imageUrls: overrides.imageUrls ?? ["/uploads/landing/hero-1.svg"],
     logoUrl: overrides.logoUrl ?? null,
+    cta: overrides.cta ?? { label: "View Menu", href: "/menu" },
   };
 }
 
 describe("LandingHero", () => {
-  it("renders the restaurant name as the page heading", () => {
-    render(<LandingHero hero={makeHero({ restaurantName: "Azahar" })} />);
+  it("renders the headline as the page heading", () => {
+    render(<LandingHero hero={makeHero()} />);
 
     expect(
-      screen.getByRole("heading", { level: 1, name: "Azahar" }),
+      screen.getByRole("heading", {
+        level: 1,
+        name: "Modern Tapas, Sunset Views",
+      }),
     ).toBeInTheDocument();
   });
 
-  it("renders the tagline when present", () => {
-    render(<LandingHero hero={makeHero({ tagline: "Cocina de brasa" })} />);
+  it("renders hero slides, description and CTA", () => {
+    render(<LandingHero hero={makeHero()} />);
 
-    expect(screen.getByText("Cocina de brasa")).toBeInTheDocument();
-  });
-
-  it("renders the hero image with the restaurant name as alt text", () => {
-    render(
-      <LandingHero
-        hero={makeHero({
-          restaurantName: "Azahar",
-          imageUrl: "https://cdn.example.com/hero.jpg",
-        })}
-      />,
+    expect(
+      screen.getByText("Spanish-inspired dining in Condado."),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "View Menu" })).toHaveAttribute(
+      "href",
+      "/menu",
     );
-
-    expect(screen.getByAltText("Azahar")).toBeInTheDocument();
+    expect(screen.getByAltText("Azahar Modern Tasca")).toBeInTheDocument();
   });
 
-  it("renders no image when imageUrl is null", () => {
-    render(<LandingHero hero={makeHero({ imageUrl: null })} />);
+  it("renders no image when imageUrls is empty", () => {
+    render(<LandingHero hero={makeHero({ imageUrls: [] })} />);
 
     expect(screen.queryByRole("img")).not.toBeInTheDocument();
   });
