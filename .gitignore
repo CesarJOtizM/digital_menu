@@ -48,3 +48,5 @@ src/prisma/generated/
 prisma/*.db
 prisma/*.db-journal
 coverage/
+
+.vercel

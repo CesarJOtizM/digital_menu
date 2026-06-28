@@ -6,6 +6,8 @@ interface LocationSectionProps {
   readonly className?: string;
   readonly align?: "center" | "left";
   readonly id?: string;
+  readonly mapTitle: string;
+  readonly openInMapsLabel: string;
 }
 
 /**
@@ -16,6 +18,8 @@ export function LocationSection({
   className,
   align = "center",
   id,
+  mapTitle,
+  openInMapsLabel,
 }: LocationSectionProps) {
   const directionsHref =
     location.mapUrl ??
@@ -46,7 +50,7 @@ export function LocationSection({
         )}
       >
         <iframe
-          title={`Mapa — ${location.address}`}
+          title={mapTitle}
           src={location.mapEmbedUrl}
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
@@ -61,7 +65,7 @@ export function LocationSection({
         rel="noreferrer noopener"
         className="mt-4 inline-block text-sm font-medium uppercase tracking-[0.2em] text-stone-500 underline-offset-4 transition-colors hover:text-stone-800 hover:underline"
       >
-        Abrir en Google Maps
+        {openInMapsLabel}
       </a>
     </section>
   );

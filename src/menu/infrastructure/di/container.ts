@@ -1,5 +1,5 @@
 import type { PrismaClient } from "@prisma/client";
-import { LocalImageStorage } from "@/shared/infrastructure/storage";
+import { createImageStorage } from "@/shared/infrastructure/storage/create-image-storage";
 import { LoggingEventDispatcher } from "@/shared/infrastructure/events";
 import type { ImageStoragePort, EventDispatcher } from "@/shared/domain/ports";
 import type { MenuRepository } from "@/menu/application/ports/menu-repository";
@@ -27,7 +27,7 @@ export interface MenuContainer {
 }
 
 export function createMenuContainer(client: PrismaClient): MenuContainer {
-  const imageStorage = new LocalImageStorage();
+  const imageStorage = createImageStorage();
   const eventDispatcher = new LoggingEventDispatcher();
 
   const menuRepository = new PrismaMenuRepository(client);

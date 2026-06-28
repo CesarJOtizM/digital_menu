@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
 import { buildSiteMetadata } from "@/config/domain";
 import { getConfig } from "@/config/infrastructure";
+import { getTranslations } from "@/i18n/server";
 import { MenuView } from "./menu-view";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const config = await getConfig();
+  const [config, { t }] = await Promise.all([getConfig(), getTranslations()]);
   return buildSiteMetadata(config, {
-    title: "Carta",
-    description: `Explora la carta de ${config.restaurantName} — platos, precios y disponibilidad al instante.`,
+    title: t("menu.title"),
+    description: t("menu.metaDescription", { restaurant: config.restaurantName }),
     path: "/menu",
   });
 }

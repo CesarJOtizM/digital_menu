@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { LandingPage } from "./landing-page";
+import { testLandingPageLabels } from "@/i18n/test-labels";
+import { LandingPageContent } from "./landing-page";
 import type { LandingViewModel } from "../landing-view-model";
 
 const SITE_URL = "http://localhost:3000";
@@ -73,7 +74,13 @@ function makeViewModel(overrides: Partial<LandingViewModel> = {}): LandingViewMo
 
 describe("LandingPage", () => {
   it("renders the hero headline and welcome section", () => {
-    render(<LandingPage viewModel={makeViewModel()} siteUrl={SITE_URL} />);
+    render(
+      <LandingPageContent
+        viewModel={makeViewModel()}
+        siteUrl={SITE_URL}
+        labels={testLandingPageLabels}
+      />,
+    );
 
     expect(
       screen.getByRole("heading", {
@@ -87,7 +94,13 @@ describe("LandingPage", () => {
   });
 
   it("renders navigation, images and footer links", () => {
-    render(<LandingPage viewModel={makeViewModel()} siteUrl={SITE_URL} />);
+    render(
+      <LandingPageContent
+        viewModel={makeViewModel()}
+        siteUrl={SITE_URL}
+        labels={testLandingPageLabels}
+      />,
+    );
 
     expect(
       screen.getByRole("navigation", { name: /navegación principal/i }),
@@ -99,7 +112,13 @@ describe("LandingPage", () => {
   });
 
   it("renders private dining before weekly hours", () => {
-    render(<LandingPage viewModel={makeViewModel()} siteUrl={SITE_URL} />);
+    render(
+      <LandingPageContent
+        viewModel={makeViewModel()}
+        siteUrl={SITE_URL}
+        labels={testLandingPageLabels}
+      />,
+    );
 
     const privateDining = screen.getByRole("heading", {
       name: "Eventos privados y celebraciones",
@@ -113,7 +132,13 @@ describe("LandingPage", () => {
   });
 
   it("never renders cart, order or checkout controls (display-only)", () => {
-    render(<LandingPage viewModel={makeViewModel()} siteUrl={SITE_URL} />);
+    render(
+      <LandingPageContent
+        viewModel={makeViewModel()}
+        siteUrl={SITE_URL}
+        labels={testLandingPageLabels}
+      />,
+    );
 
     expect(
       screen.queryByRole("button", { name: /add|cart|order|checkout/i }),

@@ -1,4 +1,6 @@
 import { requireAuthUser, signOutAction } from "@/shared/infrastructure/auth";
+import { getTranslations } from "@/i18n/server";
+import { LanguageSwitcher } from "@/i18n";
 import { DashboardNav } from "./_components/dashboard-nav";
 
 export default async function DashboardLayout({
@@ -6,7 +8,7 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const user = await requireAuthUser();
+  const [{ t }, user] = await Promise.all([getTranslations(), requireAuthUser()]);
 
   return (
     <div className="min-h-screen bg-neutral-50">
@@ -14,12 +16,13 @@ export default async function DashboardLayout({
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-4 py-4">
           <div className="space-y-3">
             <p className="text-xs uppercase tracking-wide text-neutral-500">
-              Panel administrador
+              {t("dashboard.adminPanel")}
             </p>
             <DashboardNav />
           </div>
 
           <div className="flex items-center gap-3">
+            <LanguageSwitcher />
             <span className="hidden text-sm text-neutral-600 sm:inline">
               {user.email}
             </span>
@@ -28,7 +31,7 @@ export default async function DashboardLayout({
                 type="submit"
                 className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm font-medium hover:bg-neutral-50"
               >
-                Cerrar sesión
+                {t("dashboard.signOut")}
               </button>
             </form>
           </div>

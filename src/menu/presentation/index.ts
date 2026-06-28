@@ -10,6 +10,7 @@ export {
   type BuildMenuViewModelDeps,
 } from "./view-model/menu-view-model";
 
+export { type MenuUiLabels } from "./menu-ui-labels";
 export { MenuPage } from "./components/menu-page";
 export { CategorySection } from "./components/category-section";
 export { ItemRow } from "./components/item-row";

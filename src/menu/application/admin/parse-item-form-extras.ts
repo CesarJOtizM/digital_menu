@@ -9,18 +9,18 @@ import type {
   VariantFormValue,
 } from "./item-form-types";
 
-function parseJsonArray<T>(raw: string, label: string): T[] {
+function parseJsonArray<T>(raw: string, errorCode: string): T[] {
   if (!raw.trim()) return [];
 
   try {
     const parsed: unknown = JSON.parse(raw);
     if (!Array.isArray(parsed)) {
-      throw new MenuAdminError(`${label} inválido`);
+      throw new MenuAdminError(errorCode);
     }
     return parsed as T[];
   } catch (error) {
     if (error instanceof MenuAdminError) throw error;
-    throw new MenuAdminError(`${label} inválido`);
+    throw new MenuAdminError(errorCode);
   }
 }
 
@@ -28,7 +28,7 @@ export function parseVariantsFromJson(
   raw: string,
   ids: IdGenerator,
 ): Variant[] {
-  const values = parseJsonArray<VariantFormValue>(raw, "Variantes");
+  const values = parseJsonArray<VariantFormValue>(raw, "INVALID_VARIANTS_JSON");
 
   return values
     .filter((value) => value.label.trim().length > 0)
@@ -61,7 +61,10 @@ export function parseModifierGroupsFromJson(
   raw: string,
   ids: IdGenerator,
 ): ModifierGroup[] {
-  const values = parseJsonArray<ModifierGroupFormValue>(raw, "Modificadores");
+  const values = parseJsonArray<ModifierGroupFormValue>(
+    raw,
+    "INVALID_MODIFIERS_JSON",
+  );
 
   return values
     .filter((group) => group.name.trim().length > 0)
@@ -69,33 +72,26 @@ export function parseModifierGroupsFromJson(
       const options = parseModifierOptions(group.options ?? [], ids);
       const min = Number(group.min);
       const max = Number(group.max);
+      const groupName = group.name.trim();
 
       if (!Number.isInteger(min) || min < 0) {
-        throw new MenuAdminError(
-          `El mínimo del grupo "${group.name}" debe ser un entero >= 0`,
-        );
+        throw new MenuAdminError("MODIFIER_MIN_INVALID", { groupName });
       }
       if (!Number.isInteger(max) || max < min) {
-        throw new MenuAdminError(
-          `El máximo del grupo "${group.name}" debe ser >= mínimo`,
-        );
+        throw new MenuAdminError("MODIFIER_MAX_INVALID", { groupName });
       }
 
       try {
         return ModifierGroup.create({
           id: group.id?.trim() || ids.next(),
-          name: group.name.trim(),
+          name: groupName,
           min,
           max,
           position: index,
           options,
         });
-      } catch (error) {
-        throw new MenuAdminError(
-          error instanceof Error
-            ? error.message
-            : `Grupo de modificadores "${group.name}" inválido`,
-        );
+      } catch {
+        throw new MenuAdminError("MODIFIER_GROUP_INVALID", { groupName });
       }
     });
 }

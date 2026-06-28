@@ -20,6 +20,14 @@ export interface LandingNavigationView {
   readonly footerPageLinks: readonly LandingNavLink[];
 }
 
+export interface LandingNavLabels {
+  readonly menu: string;
+  readonly about: string;
+  readonly contact: string;
+  readonly reservations: string;
+  readonly viewMenu: string;
+}
+
 interface BuildLandingNavigationInput {
   readonly restaurantName: string;
   readonly aboutHeading: string | null;
@@ -30,6 +38,7 @@ interface BuildLandingNavigationInput {
   readonly contactHeading: string | null;
   readonly menuHref: string;
   readonly reserveHref: string;
+  readonly labels: LandingNavLabels;
 }
 
 /**
@@ -72,20 +81,20 @@ export function buildLandingNavigation(
   }
 
   const headerLinks: LandingNavLink[] = [
-    { label: "Carta", href: input.menuHref },
+    { label: input.labels.menu, href: input.menuHref },
     ...(input.aboutHeading
-      ? [{ label: "Nosotros", href: "#about" }]
+      ? [{ label: input.labels.about, href: "#about" }]
       : []),
     ...(input.contactHeading
-      ? [{ label: "Contacto", href: "#contact" }]
+      ? [{ label: input.labels.contact, href: "#contact" }]
       : []),
-    { label: "Reservaciones", href: input.reserveHref },
+    { label: input.labels.reservations, href: input.reserveHref },
   ];
 
   return {
     restaurantName: input.restaurantName,
     headerLinks,
-    footerMenuLinks: [{ label: "Ver carta", href: input.menuHref }],
+    footerMenuLinks: [{ label: input.labels.viewMenu, href: input.menuHref }],
     footerPageLinks,
   };
 }
@@ -113,22 +122,25 @@ function findReserveHref(
 }
 
 /** Projects a {@link LandingViewModel} into header/footer navigation props. */
-export function buildLandingNavigationFromViewModel(viewModel: {
-  readonly hero: { readonly restaurantName: string };
-  readonly about: { readonly heading: string } | null;
-  readonly highlights: readonly {
-    readonly heading: string;
-    readonly cta: { readonly label: string; readonly href: string } | null;
-  }[];
-  readonly privateDining: {
-    readonly heading: string;
-    readonly cta: { readonly label: string; readonly href: string } | null;
-  } | null;
-  readonly hours: { readonly heading: string } | null;
-  readonly location: { readonly heading: string } | null;
-  readonly contact: { readonly heading: string } | null;
-  readonly cta: { readonly label: string; readonly href: string };
-}): LandingNavigationView {
+export function buildLandingNavigationFromViewModel(
+  viewModel: {
+    readonly hero: { readonly restaurantName: string };
+    readonly about: { readonly heading: string } | null;
+    readonly highlights: readonly {
+      readonly heading: string;
+      readonly cta: { readonly label: string; readonly href: string } | null;
+    }[];
+    readonly privateDining: {
+      readonly heading: string;
+      readonly cta: { readonly label: string; readonly href: string } | null;
+    } | null;
+    readonly hours: { readonly heading: string } | null;
+    readonly location: { readonly heading: string } | null;
+    readonly contact: { readonly heading: string } | null;
+    readonly cta: { readonly label: string; readonly href: string };
+  },
+  labels: LandingNavLabels,
+): LandingNavigationView {
   const reserveHref = findReserveHref(
     viewModel.privateDining?.cta ?? null,
     viewModel.highlights.map((h) => h.cta),
@@ -145,6 +157,7 @@ export function buildLandingNavigationFromViewModel(viewModel: {
     contactHeading: viewModel.contact?.heading ?? null,
     menuHref: viewModel.cta.href,
     reserveHref,
+    labels,
   });
 }
 

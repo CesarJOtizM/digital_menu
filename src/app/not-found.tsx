@@ -1,8 +1,12 @@
-export default function NotFound() {
+import { getTranslations } from "@/i18n/server";
+
+export default async function NotFound() {
+  const { t } = await getTranslations();
+
   return (
     <div>
-      <h2>Página no encontrada</h2>
-      <p>La página que buscas no existe.</p>
+      <h2>{t("errors.notFoundTitle")}</h2>
+      <p>{t("errors.notFoundBody")}</p>
     </div>
   );
 }

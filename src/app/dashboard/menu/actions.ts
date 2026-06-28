@@ -13,7 +13,7 @@ import {
 } from "@/menu/application/admin/menu-admin-service";
 import { parsePriceInputToCentavos } from "@/menu/application/admin/parse-price-input";
 import { CuidIdGenerator, PrismaMenuRepository } from "@/menu/infrastructure/persistence";
-import { LocalImageStorage } from "@/shared/infrastructure/storage";
+import { createImageStorage } from "@/shared/infrastructure/storage/create-image-storage";
 import { prisma } from "@/shared/infrastructure/prisma/client";
 import { requireAuthUser } from "@/shared/infrastructure/auth/require-auth-user";
 
@@ -21,7 +21,7 @@ function createMenuAdminService(): MenuAdminService {
   return new MenuAdminService(
     new PrismaMenuRepository(prisma),
     new CuidIdGenerator(),
-    new LocalImageStorage(),
+    createImageStorage(),
   );
 }
 
@@ -32,8 +32,23 @@ function revalidateMenuPages(): void {
   revalidatePath("/");
 }
 
-function redirectWithError(path: string, error: string): never {
-  redirect(`${path}?error=${encodeURIComponent(error)}`);
+function redirectWithAdminError(
+  path: string,
+  error: unknown,
+  fallbackCode: string,
+): never {
+  const url = new URL(path, "http://localhost");
+
+  if (error instanceof MenuAdminError) {
+    url.searchParams.set("error", error.code);
+    for (const [key, value] of Object.entries(error.params ?? {})) {
+      url.searchParams.set(`error_${key}`, String(value));
+    }
+  } else {
+    url.searchParams.set("error", fallbackCode);
+  }
+
+  redirect(`${url.pathname}${url.search}`);
 }
 
 function readCheckbox(formData: FormData, name: string): boolean {
@@ -57,10 +72,7 @@ export async function toggleItemActiveAction(formData: FormData) {
     await createMenuAdminService().toggleItemActive(categoryId, itemId);
     revalidateMenuPages();
   } catch (error) {
-    redirectWithError(
-      "/dashboard/menu",
-      error instanceof MenuAdminError ? error.message : "No se pudo actualizar el plato",
-    );
+    redirectWithAdminError("/dashboard/menu", error, "UPDATE_ITEM_FAILED");
   }
 
   redirect("/dashboard/menu");
@@ -75,7 +87,7 @@ export async function saveItemAction(formData: FormData) {
   const returnTo = String(formData.get("returnTo") ?? "/dashboard/menu");
   const service = createMenuAdminService();
   const ids = new CuidIdGenerator();
-  const storage = new LocalImageStorage();
+  const storage = createImageStorage();
 
   try {
     const menu = await service.loadMenu();
@@ -111,18 +123,12 @@ export async function saveItemAction(formData: FormData) {
     revalidateMenuPages();
     redirect(returnTo);
   } catch (error) {
-    const message =
-      error instanceof MenuAdminError
-        ? error.message
-        : error instanceof Error
-          ? error.message
-          : "No se pudo guardar el plato";
-
-    redirectWithError(
+    redirectWithAdminError(
       itemId
         ? `/dashboard/menu/items/${itemId}?categoryId=${encodeURIComponent(categoryId)}`
         : `/dashboard/menu/items/new?categoryId=${encodeURIComponent(categoryId)}`,
-      message,
+      error,
+      "SAVE_ITEM_FAILED",
     );
   }
 }
@@ -137,10 +143,7 @@ export async function deleteItemAction(formData: FormData) {
     await createMenuAdminService().deleteItem(categoryId, itemId);
     revalidateMenuPages();
   } catch (error) {
-    redirectWithError(
-      "/dashboard/menu",
-      error instanceof MenuAdminError ? error.message : "No se pudo eliminar el plato",
-    );
+    redirectWithAdminError("/dashboard/menu", error, "DELETE_ITEM_FAILED");
   }
 
   redirect("/dashboard/menu");
@@ -161,16 +164,12 @@ export async function saveCategoryAction(formData: FormData) {
     revalidateMenuPages();
     redirect(returnTo);
   } catch (error) {
-    const message =
-      error instanceof MenuAdminError
-        ? error.message
-        : "No se pudo guardar la categoría";
-
-    redirectWithError(
+    redirectWithAdminError(
       categoryId
         ? `/dashboard/menu/categories/${categoryId}`
         : "/dashboard/menu/categories/new",
-      message,
+      error,
+      "SAVE_CATEGORY_FAILED",
     );
   }
 }
@@ -184,10 +183,7 @@ export async function deleteCategoryAction(formData: FormData) {
     await createMenuAdminService().deleteCategory(categoryId);
     revalidateMenuPages();
   } catch (error) {
-    redirectWithError(
-      "/dashboard/menu",
-      error instanceof MenuAdminError ? error.message : "No se pudo eliminar la categoría",
-    );
+    redirectWithAdminError("/dashboard/menu", error, "DELETE_CATEGORY_FAILED");
   }
 
   redirect("/dashboard/menu");

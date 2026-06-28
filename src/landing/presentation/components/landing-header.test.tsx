@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { testLandingNavLabels, testLandingPageLabels } from "@/i18n/test-labels";
 import { LandingHeader } from "./landing-header";
 import { buildLandingNavigation } from "../landing-navigation";
 
@@ -14,11 +15,17 @@ const navigation = buildLandingNavigation({
   contactHeading: "Contacto",
   menuHref: "/menu",
   reserveHref: "https://wa.me/17874828182",
+  labels: testLandingNavLabels,
 });
 
 describe("LandingHeader", () => {
   it("renders the restaurant name and main nav links", () => {
-    render(<LandingHeader navigation={navigation} />);
+    render(
+      <LandingHeader
+        navigation={navigation}
+        mainNavAria={testLandingPageLabels.mainNavAria}
+      />,
+    );
 
     expect(screen.getByRole("link", { name: "Azahar Modern Tasca" })).toHaveAttribute(
       "href",

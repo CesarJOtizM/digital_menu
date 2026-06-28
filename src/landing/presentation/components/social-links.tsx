@@ -2,20 +2,21 @@ import type { LandingSocialLink } from "../landing-view-model";
 
 interface SocialLinksProps {
   readonly links: readonly LandingSocialLink[];
+  readonly ariaLabel: string;
 }
 
 /**
  * A row of social links rendered as understated uppercase labels. Renders
  * nothing when there are no links, so the page can include it unconditionally.
  */
-export function SocialLinks({ links }: SocialLinksProps) {
+export function SocialLinks({ links, ariaLabel }: SocialLinksProps) {
   if (links.length === 0) {
     return null;
   }
 
   return (
     <nav
-      aria-label="Social links"
+      aria-label={ariaLabel}
       className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3"
     >
       {links.map((link) => (

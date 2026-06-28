@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { testLandingNavLabels, testLandingPageLabels } from "@/i18n/test-labels";
 import { LandingFooter } from "./landing-footer";
 import { buildLandingNavigation } from "../landing-navigation";
 
@@ -14,6 +15,7 @@ const navigation = buildLandingNavigation({
   contactHeading: "Contacto",
   menuHref: "/menu",
   reserveHref: "https://wa.me/17874828182",
+  labels: testLandingNavLabels,
 });
 
 describe("LandingFooter", () => {
@@ -22,6 +24,13 @@ describe("LandingFooter", () => {
       <LandingFooter
         navigation={navigation}
         social={[{ label: "Instagram", url: "https://instagram.com/azaharpr" }]}
+        labels={{
+          menu: testLandingPageLabels.footerMenu,
+          page: testLandingPageLabels.footerPage,
+          followUs: testLandingPageLabels.followUs,
+          copyright: testLandingPageLabels.copyright,
+        }}
+        socialLinksAria={testLandingPageLabels.socialLinksAria}
       />,
     );
 

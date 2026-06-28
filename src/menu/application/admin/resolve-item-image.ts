@@ -1,5 +1,6 @@
 import { IMAGE_SOURCE_TYPE, ImageSource } from "@/shared/domain";
 import type { ImageStoragePort } from "@/shared/domain/ports";
+import { imageSourceFromStored } from "@/shared/infrastructure/storage/image-source-from-stored";
 import { MenuAdminError } from "./menu-admin-service";
 
 const ALLOWED_IMAGE_TYPES = new Set([
@@ -27,23 +28,23 @@ export async function resolveItemImageSource(
 
   if (uploaded) {
     if (!ALLOWED_IMAGE_TYPES.has(uploaded.type)) {
-      throw new MenuAdminError("Formato de imagen no soportado (usa JPG, PNG o WebP)");
+      throw new MenuAdminError("UNSUPPORTED_IMAGE_FORMAT");
     }
     if (uploaded.size > MAX_IMAGE_BYTES) {
-      throw new MenuAdminError("La imagen no puede superar 5 MB");
+      throw new MenuAdminError("IMAGE_TOO_LARGE");
     }
 
-    if (existing?.type === IMAGE_SOURCE_TYPE.LOCAL) {
+    if (existing && existing.type !== IMAGE_SOURCE_TYPE.PLACEHOLDER) {
       await storage.delete(existing.url).catch(() => undefined);
     }
 
     const buffer = Buffer.from(await uploaded.arrayBuffer());
     const stored = await storage.store(buffer, uploaded.name, uploaded.type);
-    return ImageSource.local(stored.path);
+    return imageSourceFromStored(stored);
   }
 
   if (removeImage) {
-    if (existing?.type === IMAGE_SOURCE_TYPE.LOCAL) {
+    if (existing && existing.type !== IMAGE_SOURCE_TYPE.PLACEHOLDER) {
       await storage.delete(existing.url).catch(() => undefined);
     }
     return ImageSource.placeholder();

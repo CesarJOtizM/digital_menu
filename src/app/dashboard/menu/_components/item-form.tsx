@@ -1,4 +1,6 @@
 import { ItemFormEditor } from "./item-form-editor";
+import { getTranslations } from "@/i18n/server";
+import { resolveAdminError, type TranslationParams } from "@/i18n";
 import type { ItemFormValues } from "@/menu/application/admin/item-form-types";
 import type { AllergenOption } from "@/menu/infrastructure/persistence/load-allergens";
 
@@ -10,8 +12,16 @@ interface ItemFormProps {
   title: string;
   returnTo?: string;
   error?: string;
+  errorParams?: TranslationParams;
 }
 
-export function ItemForm(props: ItemFormProps) {
-  return <ItemFormEditor {...props} />;
+export async function ItemForm({
+  error,
+  errorParams,
+  ...props
+}: ItemFormProps) {
+  const { t } = await getTranslations();
+  const errorMessage = resolveAdminError(t, error, errorParams) ?? undefined;
+
+  return <ItemFormEditor {...props} error={errorMessage} />;
 }

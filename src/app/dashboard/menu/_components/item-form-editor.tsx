@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { useTranslations } from "@/i18n";
 import { saveItemAction } from "../actions";
 import type {
   ItemFormValues,
@@ -43,6 +44,7 @@ export function ItemFormEditor({
   returnTo = "/dashboard/menu",
   error,
 }: ItemFormEditorProps) {
+  const t = useTranslations();
   const [variants, setVariants] = useState(initial.variants);
   const [modifierGroups, setModifierGroups] = useState(initial.modifierGroups);
   const [removeImage, setRemoveImage] = useState(false);
@@ -59,7 +61,7 @@ export function ItemFormEditor({
         href="/dashboard/menu"
         className="text-sm text-neutral-500 hover:text-neutral-800"
       >
-        ← Volver a gestionar carta
+        {t("dashboard.backToMenu")}
       </Link>
 
       <h1 className="mt-4 text-2xl font-medium">{title}</h1>
@@ -90,11 +92,11 @@ export function ItemFormEditor({
         />
 
         <section className="space-y-5 rounded-lg border border-neutral-200 bg-white p-5">
-          <h2 className="text-lg font-medium">Datos básicos</h2>
+          <h2 className="text-lg font-medium">{t("itemForm.basics")}</h2>
 
           <div className="space-y-1">
             <label htmlFor="name" className="text-sm font-medium">
-              Nombre
+              {t("itemForm.name")}
             </label>
             <input
               id="name"
@@ -107,7 +109,7 @@ export function ItemFormEditor({
 
           <div className="space-y-1">
             <label htmlFor="description" className="text-sm font-medium">
-              Descripción
+              {t("itemForm.description")}
             </label>
             <textarea
               id="description"
@@ -120,7 +122,7 @@ export function ItemFormEditor({
 
           <div className="space-y-1">
             <label htmlFor="price" className="text-sm font-medium">
-              Precio base
+              {t("itemForm.basePrice")}
             </label>
             <input
               id="price"
@@ -131,9 +133,7 @@ export function ItemFormEditor({
               defaultValue={initial.price}
               className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
             />
-            <p className="text-xs text-neutral-500">
-              Usado cuando el plato no tiene variantes seleccionadas.
-            </p>
+            <p className="text-xs text-neutral-500">{t("itemForm.basePriceHint")}</p>
           </div>
 
           <label className="flex items-center gap-2 text-sm">
@@ -143,23 +143,34 @@ export function ItemFormEditor({
               defaultChecked={initial.active}
               className="rounded border-neutral-300"
             />
-            Visible en la carta pública
+            {t("itemForm.visibleOnMenu")}
           </label>
         </section>
 
         <section className="space-y-4 rounded-lg border border-neutral-200 bg-white p-5">
-          <div>
-            <h2 className="text-lg font-medium">Alérgenos</h2>
-            <p className="mt-1 text-sm text-neutral-500">
-              Marca los alérgenos presentes en este plato. Se muestran en la carta
-              pública.
-            </p>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-medium">{t("itemForm.allergens")}</h2>
+              <p className="mt-1 text-sm text-neutral-500">{t("itemForm.allergensHint")}</p>
+            </div>
+            <Link
+              href="/dashboard/menu/allergens"
+              className="text-sm text-neutral-700 underline-offset-2 hover:underline"
+            >
+              {t("allergens.manage")}
+            </Link>
           </div>
 
           {allergens.length === 0 ? (
             <p className="text-sm text-neutral-500">
-              No hay alérgenos configurados. Ejecuta{" "}
-              <code className="rounded bg-neutral-100 px-1.5 py-0.5">pnpm db:seed</code>.
+              {t("allergens.emptyShort")}{" "}
+              <Link
+                href="/dashboard/menu/allergens/new"
+                className="font-medium text-neutral-900 underline-offset-2 hover:underline"
+              >
+                {t("allergens.addFirst")}
+              </Link>
+              .
             </p>
           ) : (
             <div className="grid gap-2 sm:grid-cols-2">
@@ -184,10 +195,8 @@ export function ItemFormEditor({
 
         <section className="space-y-4 rounded-lg border border-neutral-200 bg-white p-5">
           <div>
-            <h2 className="text-lg font-medium">Imagen</h2>
-            <p className="mt-1 text-sm text-neutral-500">
-              JPG, PNG o WebP. Máximo 5 MB.
-            </p>
+            <h2 className="text-lg font-medium">{t("itemForm.image")}</h2>
+            <p className="mt-1 text-sm text-neutral-500">{t("itemForm.imageHint")}</p>
           </div>
 
           {initial.hasImage && initial.imageUrl && !removeImage ? (
@@ -195,7 +204,7 @@ export function ItemFormEditor({
               <div className="relative h-24 w-24 overflow-hidden rounded-md border border-neutral-200">
                 <Image
                   src={initial.imageUrl}
-                  alt={initial.name || "Imagen del plato"}
+                  alt={initial.name || t("itemForm.imageAlt")}
                   fill
                   className="object-cover"
                   unoptimized
@@ -208,7 +217,7 @@ export function ItemFormEditor({
                   checked={removeImage}
                   onChange={(event) => setRemoveImage(event.target.checked)}
                 />
-                Quitar imagen actual
+                {t("itemForm.removeImage")}
               </label>
             </div>
           ) : null}
@@ -226,22 +235,20 @@ export function ItemFormEditor({
         <section className="space-y-4 rounded-lg border border-neutral-200 bg-white p-5">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-medium">Variantes</h2>
-              <p className="mt-1 text-sm text-neutral-500">
-                Tamaños u opciones con precio absoluto (ej. Personal / Mediana).
-              </p>
+              <h2 className="text-lg font-medium">{t("itemForm.variants")}</h2>
+              <p className="mt-1 text-sm text-neutral-500">{t("itemForm.variantsHint")}</p>
             </div>
             <button
               type="button"
               onClick={() => setVariants((current) => [...current, createVariant()])}
               className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm hover:bg-neutral-50"
             >
-              Agregar variante
+              {t("itemForm.addVariant")}
             </button>
           </div>
 
           {variants.length === 0 ? (
-            <p className="text-sm text-neutral-500">Sin variantes configuradas.</p>
+            <p className="text-sm text-neutral-500">{t("itemForm.noVariants")}</p>
           ) : (
             <ul className="space-y-3">
               {variants.map((variant, index) => (
@@ -260,7 +267,7 @@ export function ItemFormEditor({
                         ),
                       )
                     }
-                    placeholder="Ej. Mediana"
+                    placeholder={t("itemForm.variantPlaceholder")}
                     className="rounded-md border border-neutral-300 px-3 py-2 text-sm"
                   />
                   <input
@@ -274,7 +281,7 @@ export function ItemFormEditor({
                         ),
                       )
                     }
-                    placeholder="Precio"
+                    placeholder={t("itemForm.pricePlaceholder")}
                     inputMode="decimal"
                     className="rounded-md border border-neutral-300 px-3 py-2 text-sm"
                   />
@@ -287,7 +294,7 @@ export function ItemFormEditor({
                     }
                     className="text-sm text-red-700 hover:underline"
                   >
-                    Quitar
+                    {t("itemForm.remove")}
                   </button>
                 </li>
               ))}
@@ -298,10 +305,8 @@ export function ItemFormEditor({
         <section className="space-y-4 rounded-lg border border-neutral-200 bg-white p-5">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-medium">Modificadores</h2>
-              <p className="mt-1 text-sm text-neutral-500">
-                Extras, salsas o opciones con precio adicional.
-              </p>
+              <h2 className="text-lg font-medium">{t("itemForm.modifiers")}</h2>
+              <p className="mt-1 text-sm text-neutral-500">{t("itemForm.modifiersHint")}</p>
             </div>
             <button
               type="button"
@@ -310,12 +315,12 @@ export function ItemFormEditor({
               }
               className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm hover:bg-neutral-50"
             >
-              Agregar grupo
+              {t("itemForm.addGroup")}
             </button>
           </div>
 
           {modifierGroups.length === 0 ? (
-            <p className="text-sm text-neutral-500">Sin grupos de modificadores.</p>
+            <p className="text-sm text-neutral-500">{t("itemForm.noModifierGroups")}</p>
           ) : (
             <ul className="space-y-4">
               {modifierGroups.map((group, groupIndex) => (
@@ -335,7 +340,7 @@ export function ItemFormEditor({
                           ),
                         )
                       }
-                      placeholder="Nombre del grupo"
+                      placeholder={t("itemForm.groupNamePlaceholder")}
                       className="rounded-md border border-neutral-300 px-3 py-2 text-sm"
                     />
                     <input
@@ -349,7 +354,7 @@ export function ItemFormEditor({
                           ),
                         )
                       }
-                      placeholder="Mín"
+                      placeholder={t("itemForm.min")}
                       inputMode="numeric"
                       className="rounded-md border border-neutral-300 px-3 py-2 text-sm"
                     />
@@ -364,7 +369,7 @@ export function ItemFormEditor({
                           ),
                         )
                       }
-                      placeholder="Máx"
+                      placeholder={t("itemForm.max")}
                       inputMode="numeric"
                       className="rounded-md border border-neutral-300 px-3 py-2 text-sm"
                     />
@@ -377,7 +382,7 @@ export function ItemFormEditor({
                       }
                       className="text-sm text-red-700 hover:underline"
                     >
-                      Eliminar grupo
+                      {t("itemForm.deleteGroup")}
                     </button>
                   </div>
 
@@ -409,7 +414,7 @@ export function ItemFormEditor({
                               ),
                             )
                           }
-                          placeholder="Opción"
+                          placeholder={t("itemForm.optionPlaceholder")}
                           className="rounded-md border border-neutral-300 px-3 py-2 text-sm"
                         />
                         <input
@@ -457,7 +462,7 @@ export function ItemFormEditor({
                           }
                           className="text-sm text-red-700 hover:underline"
                         >
-                          Quitar
+                          {t("itemForm.remove")}
                         </button>
                       </div>
                     ))}
@@ -479,7 +484,7 @@ export function ItemFormEditor({
                     }
                     className="mt-3 text-sm text-neutral-700 hover:underline"
                   >
-                    + Agregar opción
+                    {t("itemForm.addOption")}
                   </button>
                 </li>
               ))}
@@ -492,13 +497,13 @@ export function ItemFormEditor({
             type="submit"
             className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
           >
-            Guardar plato
+            {t("itemForm.saveItem")}
           </button>
           <Link
             href="/dashboard/menu"
             className="rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium hover:bg-neutral-50"
           >
-            Cancelar
+            {t("common.cancel")}
           </Link>
         </div>
       </form>

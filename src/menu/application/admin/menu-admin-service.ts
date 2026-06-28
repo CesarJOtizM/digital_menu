@@ -7,8 +7,13 @@ import type { MenuRepository } from "../ports/menu-repository";
 import type { IdGenerator } from "../ports/id-generator";
 
 export class MenuAdminError extends Error {
-  constructor(message: string) {
-    super(message);
+  readonly code: string;
+  readonly params?: Readonly<Record<string, string | number>>;
+
+  constructor(code: string, params?: Readonly<Record<string, string | number>>) {
+    super(code);
+    this.code = code;
+    this.params = params;
     this.name = "MenuAdminError";
   }
 }
@@ -38,7 +43,7 @@ export class MenuAdminService {
   async loadMenu(): Promise<Menu> {
     const menu = await this.menus.findForAdmin();
     if (!menu) {
-      throw new MenuAdminError("No hay carta configurada");
+      throw new MenuAdminError("NO_MENU");
     }
     return menu;
   }
@@ -112,7 +117,7 @@ export class MenuAdminService {
     const menu = await this.loadMenu();
     const existing = this.requireItem(menu, categoryId, itemId);
 
-    if (existing.imageSource.type === IMAGE_SOURCE_TYPE.LOCAL) {
+    if (existing.imageSource.type !== IMAGE_SOURCE_TYPE.PLACEHOLDER) {
       await this.images.delete(existing.imageSource.url).catch(() => undefined);
     }
 
@@ -128,7 +133,7 @@ export class MenuAdminService {
     const menu = await this.loadMenu();
     const name = input.name.trim();
     if (!name) {
-      throw new MenuAdminError("El nombre de la categoría es obligatorio");
+      throw new MenuAdminError("CATEGORY_NAME_REQUIRED");
     }
 
     if (categoryId) {
@@ -158,7 +163,7 @@ export class MenuAdminService {
     const category = this.requireCategory(menu, categoryId);
 
     for (const item of category.items) {
-      if (item.imageSource.type === IMAGE_SOURCE_TYPE.LOCAL) {
+      if (item.imageSource.type !== IMAGE_SOURCE_TYPE.PLACEHOLDER) {
         await this.images.delete(item.imageSource.url).catch(() => undefined);
       }
     }
@@ -169,7 +174,7 @@ export class MenuAdminService {
   private requireCategory(menu: Menu, categoryId: string): Category {
     const category = menu.findCategory(categoryId);
     if (!category) {
-      throw new MenuAdminError("Categoría no encontrada");
+      throw new MenuAdminError("CATEGORY_NOT_FOUND");
     }
     return category;
   }
@@ -177,7 +182,7 @@ export class MenuAdminService {
   private requireItem(menu: Menu, categoryId: string, itemId: string): Item {
     const item = menu.findItem(categoryId, itemId);
     if (!item) {
-      throw new MenuAdminError("Plato no encontrado");
+      throw new MenuAdminError("ITEM_NOT_FOUND");
     }
     return item;
   }

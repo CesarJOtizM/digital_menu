@@ -1,28 +1,33 @@
 import { notFound } from "next/navigation";
 import { loadAllergenOptions } from "@/menu/infrastructure/persistence/load-allergens";
+import { getTranslations } from "@/i18n/server";
+import { extractAdminErrorParams } from "@/i18n/extract-admin-error-params";
 import { ItemForm } from "../../_components/item-form";
 import { itemToFormValues } from "../../item-to-form-values";
 import { loadAdminMenu } from "../../load-admin-menu";
 
-export const metadata = {
-  title: "Editar plato",
-};
+export async function generateMetadata() {
+  const { t } = await getTranslations();
+  return { title: t("dashboard.editItem") };
+}
 
 export default async function EditItemPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ categoryId?: string; error?: string }>;
+  searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const { id } = await params;
-  const { categoryId, error } = await searchParams;
+  const query = await searchParams;
+  const categoryId = query.categoryId;
 
   if (!categoryId) {
     notFound();
   }
 
-  const [menu, allergens] = await Promise.all([
+  const [{ t }, menu, allergens] = await Promise.all([
+    getTranslations(),
     loadAdminMenu(),
     loadAllergenOptions(),
   ]);
@@ -37,8 +42,9 @@ export default async function EditItemPage({
       categoryId={categoryId}
       itemId={id}
       allergens={allergens}
-      title={`Editar: ${item.name}`}
-      error={error}
+      title={t("dashboard.editItemNamed", { name: item.name })}
+      error={query.error}
+      errorParams={extractAdminErrorParams(query)}
       initial={itemToFormValues(item)}
     />
   );

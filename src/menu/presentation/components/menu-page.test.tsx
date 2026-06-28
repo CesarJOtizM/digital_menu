@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { testMenuUiLabels } from "@/i18n/test-labels";
 import { MenuPage } from "./menu-page";
 import type { MenuViewModel } from "../view-model/menu-view-model";
 
@@ -34,7 +35,12 @@ function makeViewModel(overrides: Partial<MenuViewModel> = {}): MenuViewModel {
 
 describe("MenuPage", () => {
   it("renders the restaurant name in the hero", () => {
-    render(<MenuPage viewModel={makeViewModel({ restaurantName: "Azahar" })} />);
+    render(
+      <MenuPage
+        viewModel={makeViewModel({ restaurantName: "Azahar" })}
+        labels={testMenuUiLabels}
+      />,
+    );
 
     expect(screen.getByText("Azahar")).toBeInTheDocument();
   });
@@ -63,7 +69,7 @@ describe("MenuPage", () => {
       ],
     });
 
-    render(<MenuPage viewModel={viewModel} />);
+    render(<MenuPage viewModel={viewModel} labels={testMenuUiLabels} />);
 
     expect(screen.getByRole("heading", { name: "Mains" })).toBeInTheDocument();
     expect(screen.getByText("Churrasco")).toBeInTheDocument();
@@ -71,14 +77,19 @@ describe("MenuPage", () => {
   });
 
   it("renders the empty state (and no category) when the menu is empty", () => {
-    render(<MenuPage viewModel={makeViewModel({ isEmpty: true, categories: [] })} />);
+    render(
+      <MenuPage
+        viewModel={makeViewModel({ isEmpty: true, categories: [] })}
+        labels={testMenuUiLabels}
+      />,
+    );
 
     expect(screen.getByText(/preparando la carta/i)).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Appetizers" })).not.toBeInTheDocument();
   });
 
   it("never renders cart, checkout or order controls", () => {
-    render(<MenuPage viewModel={makeViewModel()} />);
+    render(<MenuPage viewModel={makeViewModel()} labels={testMenuUiLabels} />);
 
     expect(screen.queryByRole("button", { name: /add|cart|order|checkout/i })).not.toBeInTheDocument();
     expect(screen.queryByText(/checkout/i)).not.toBeInTheDocument();
@@ -91,6 +102,7 @@ describe("MenuPage", () => {
         viewModel={makeViewModel({
           homeLink: { label: "Inicio", href: "/" },
         })}
+        labels={testMenuUiLabels}
       />,
     );
 
@@ -98,7 +110,9 @@ describe("MenuPage", () => {
   });
 
   it("omits the back link when landing is disabled", () => {
-    render(<MenuPage viewModel={makeViewModel({ homeLink: null })} />);
+    render(
+      <MenuPage viewModel={makeViewModel({ homeLink: null })} labels={testMenuUiLabels} />,
+    );
 
     expect(screen.queryByRole("link", { name: /inicio/i })).not.toBeInTheDocument();
   });

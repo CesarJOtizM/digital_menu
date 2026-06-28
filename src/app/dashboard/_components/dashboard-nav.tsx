@@ -2,14 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "@/i18n";
 
 const LINKS = [
-  { href: "/dashboard", label: "Resumen", exact: true },
-  { href: "/dashboard/menu", label: "Gestionar carta", exact: false },
+  { href: "/dashboard", key: "dashboard.overview", exact: true },
+  { href: "/dashboard/menu", key: "dashboard.manageMenu", exact: false },
 ] as const;
 
 export function DashboardNav() {
   const pathname = usePathname();
+  const t = useTranslations();
 
   return (
     <nav className="flex flex-wrap gap-2">
@@ -28,7 +30,7 @@ export function DashboardNav() {
                 : "rounded-md border border-neutral-300 px-3 py-1.5 text-sm font-medium hover:bg-neutral-50"
             }
           >
-            {link.label}
+            {t(link.key)}
           </Link>
         );
       })}

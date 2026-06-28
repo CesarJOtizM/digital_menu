@@ -1,13 +1,15 @@
+import { MenuAdminError } from "./menu-admin-service";
+
 /** Parses a decimal price string (e.g. "12.50") into integer centavos. */
 export function parsePriceInputToCentavos(raw: string): number {
   const normalized = raw.trim().replace(",", ".");
   if (!normalized) {
-    throw new Error("Precio requerido");
+    throw new MenuAdminError("PRICE_REQUIRED");
   }
 
   const amount = Number(normalized);
   if (!Number.isFinite(amount) || amount < 0) {
-    throw new Error("Precio inválido");
+    throw new MenuAdminError("PRICE_INVALID");
   }
 
   return Math.round(amount * 100);

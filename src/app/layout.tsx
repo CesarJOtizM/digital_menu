@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Cormorant_Garamond, DM_Sans } from "next/font/google";
 import { buildSiteMetadata, buildThemeStyle } from "@/config/domain";
 import { getConfig } from "@/config/infrastructure";
+import { getTranslations } from "@/i18n/server";
+import { I18nProvider } from "@/i18n";
 import "./globals.css";
 
 const heading = Cormorant_Garamond({
@@ -28,19 +30,24 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const config = await getConfig();
+  const [config, { locale, messages }] = await Promise.all([
+    getConfig(),
+    getTranslations(),
+  ]);
   const themeStyle = buildThemeStyle({
     primaryColor: config.primaryColor,
     secondaryColor: config.secondaryColor,
   });
 
   return (
-    <html lang={config.locale}>
+    <html lang={locale}>
       <body
         className={`${heading.variable} ${body.variable}`}
         style={themeStyle}
       >
-        {children}
+        <I18nProvider locale={locale} messages={messages}>
+          {children}
+        </I18nProvider>
       </body>
     </html>
   );

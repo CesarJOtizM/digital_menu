@@ -1,15 +1,22 @@
 import Link from "next/link";
 import { createPriceFormatter } from "@/config/domain";
 import { getConfig } from "@/config/infrastructure";
+import { getTranslations } from "@/i18n/server";
+import { pluralize } from "@/i18n";
 import { deleteCategoryAction, deleteItemAction, toggleItemActiveAction } from "./actions";
 import { loadAdminMenu } from "./load-admin-menu";
 
-export const metadata = {
-  title: "Gestionar carta",
-};
+export async function generateMetadata() {
+  const { t } = await getTranslations();
+  return { title: t("dashboard.manageMenu") };
+}
 
 export default async function AdminMenuPage() {
-  const [menu, config] = await Promise.all([loadAdminMenu(), getConfig()]);
+  const [{ t }, menu, config] = await Promise.all([
+    getTranslations(),
+    loadAdminMenu(),
+    getConfig(),
+  ]);
   const formatPrice = createPriceFormatter({
     locale: config.locale,
     currency: config.currency,
@@ -21,12 +28,12 @@ export default async function AdminMenuPage() {
       <main className="mx-auto max-w-5xl px-4 py-10">
         <section className="rounded-lg border border-amber-200 bg-amber-50 p-6">
           <h1 className="text-xl font-medium text-amber-950">
-            No hay carta para gestionar
+            {t("dashboard.noMenuToManage")}
           </h1>
           <p className="mt-2 text-sm text-amber-900">
-            Ejecuta{" "}
+            {t("dashboard.runSeed")}{" "}
             <code className="rounded bg-amber-100 px-1.5 py-0.5">pnpm db:seed</code>{" "}
-            para cargar datos de ejemplo.
+            {t("dashboard.seedHint")}
           </p>
         </section>
       </main>
@@ -37,9 +44,9 @@ export default async function AdminMenuPage() {
     <main className="mx-auto max-w-5xl px-4 py-10">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-medium">Gestionar carta</h1>
+          <h1 className="text-2xl font-medium">{t("dashboard.manageMenu")}</h1>
           <p className="mt-1 text-sm text-neutral-600">
-            {menu.name} · {menu.categories.length} categorías
+            {menu.name} · {t("dashboard.categoryCount", { count: menu.categories.length })}
           </p>
         </div>
 
@@ -48,13 +55,19 @@ export default async function AdminMenuPage() {
             href="/dashboard/menu/categories/new"
             className="rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium hover:bg-white"
           >
-            Nueva categoría
+            {t("dashboard.newCategory")}
+          </Link>
+          <Link
+            href="/dashboard/menu/allergens"
+            className="rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium hover:bg-white"
+          >
+            {t("allergens.manage")}
           </Link>
           <Link
             href="/menu"
             className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
           >
-            Ver carta pública
+            {t("dashboard.viewPublicMenu")}
           </Link>
         </div>
       </div>
@@ -70,7 +83,11 @@ export default async function AdminMenuPage() {
                 <h2 className="text-lg font-medium">{category.name}</h2>
                 <p className="mt-1 text-sm text-neutral-500">
                   {category.items.length}{" "}
-                  {category.items.length === 1 ? "plato" : "platos"}
+                  {pluralize(
+                    category.items.length,
+                    t("dashboard.item_one"),
+                    t("dashboard.item_other"),
+                  )}
                 </p>
               </div>
 
@@ -79,20 +96,20 @@ export default async function AdminMenuPage() {
                   href={`/dashboard/menu/categories/${category.id}`}
                   className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm hover:bg-neutral-50"
                 >
-                  Editar categoría
+                  {t("dashboard.editCategory")}
                 </Link>
                 <Link
                   href={`/dashboard/menu/items/new?categoryId=${category.id}`}
                   className="rounded-md bg-neutral-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-neutral-800"
                 >
-                  Agregar plato
+                  {t("dashboard.addItem")}
                 </Link>
               </div>
             </div>
 
             {category.items.length === 0 ? (
               <p className="mt-4 text-sm text-neutral-500">
-                Esta categoría no tiene platos todavía.
+                {t("dashboard.emptyCategory")}
               </p>
             ) : (
               <ul className="mt-4 divide-y divide-neutral-100">
@@ -106,17 +123,17 @@ export default async function AdminMenuPage() {
                         <p className="font-medium">{item.name}</p>
                         {!item.active ? (
                           <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-600">
-                            Inactivo
+                            {t("dashboard.inactive")}
                           </span>
                         ) : null}
                         {item.variants.length > 0 ? (
                           <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-700">
-                            {item.variants.length} variantes
+                            {t("dashboard.variants", { count: item.variants.length })}
                           </span>
                         ) : null}
                         {item.modifierGroups.length > 0 ? (
                           <span className="rounded-full bg-violet-50 px-2 py-0.5 text-xs text-violet-700">
-                            {item.modifierGroups.length} mods
+                            {t("dashboard.mods", { count: item.modifierGroups.length })}
                           </span>
                         ) : null}
                       </div>
@@ -142,7 +159,7 @@ export default async function AdminMenuPage() {
                               : "rounded-md border border-neutral-300 px-3 py-1.5 text-sm text-neutral-600 hover:bg-neutral-50"
                           }
                         >
-                          {item.active ? "Activo" : "Inactivo"}
+                          {item.active ? t("dashboard.active") : t("dashboard.inactive")}
                         </button>
                       </form>
 
@@ -150,7 +167,7 @@ export default async function AdminMenuPage() {
                         href={`/dashboard/menu/items/${item.id}?categoryId=${category.id}`}
                         className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm hover:bg-neutral-50"
                       >
-                        Editar
+                        {t("common.edit")}
                       </Link>
 
                       <form action={deleteItemAction}>
@@ -160,7 +177,7 @@ export default async function AdminMenuPage() {
                           type="submit"
                           className="rounded-md border border-red-200 px-3 py-1.5 text-sm text-red-700 hover:bg-red-50"
                         >
-                          Eliminar
+                          {t("common.delete")}
                         </button>
                       </form>
                     </div>
@@ -175,7 +192,7 @@ export default async function AdminMenuPage() {
                 type="submit"
                 className="text-sm text-red-700 hover:underline"
               >
-                Eliminar categoría
+                {t("dashboard.deleteCategory")}
               </button>
             </form>
           </section>

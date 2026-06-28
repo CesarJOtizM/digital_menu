@@ -2,21 +2,15 @@ import { CategoryNav } from "./category-nav";
 import { CategorySection } from "./category-section";
 import { EmptyMenuState } from "./empty-menu-state";
 import { ViewHomeLink } from "./view-home-link";
+import type { MenuUiLabels } from "../menu-ui-labels";
 import type { MenuViewModel } from "../view-model/menu-view-model";
 
 interface MenuPageProps {
   readonly viewModel: MenuViewModel;
+  readonly labels: MenuUiLabels;
 }
 
-/**
- * The public, read-only Azahar-style menu page. An editorial "printed carte":
- * a hero with the restaurant name, a category filter strip, then serif category
- * sections framed by a thin border. Display-only — no cart/checkout anywhere.
- *
- * When the menu is empty (no published menu / no items) it shows a graceful
- * empty state instead of erroring.
- */
-export function MenuPage({ viewModel }: MenuPageProps) {
+export function MenuPage({ viewModel, labels }: MenuPageProps) {
   const navCategories = viewModel.categories.map((category) => ({
     id: category.id,
     name: category.name,
@@ -31,7 +25,7 @@ export function MenuPage({ viewModel }: MenuPageProps) {
       ) : null}
       <header className="mb-8 text-center">
         <p className="text-xs font-medium uppercase tracking-[0.3em] text-stone-400">
-          Carta
+          {labels.subtitle}
         </p>
         <h1 className="menu-brand-name mt-2 font-heading text-4xl font-medium tracking-wide sm:text-5xl">
           {viewModel.restaurantName}
@@ -40,13 +34,20 @@ export function MenuPage({ viewModel }: MenuPageProps) {
 
       <div className="rounded-sm border border-stone-300 bg-stone-50/60 p-6 shadow-sm sm:p-10">
         {viewModel.isEmpty ? (
-          <EmptyMenuState />
+          <EmptyMenuState title={labels.emptyTitle} body={labels.emptyBody} />
         ) : (
           <>
-            <CategoryNav categories={navCategories} />
+            <CategoryNav
+              categories={navCategories}
+              ariaLabel={labels.categoryNavAria}
+            />
             <div className="mt-8">
               {viewModel.categories.map((category) => (
-                <CategorySection key={category.id} category={category} />
+                <CategorySection
+                  key={category.id}
+                  category={category}
+                  unavailableLabel={labels.unavailable}
+                />
               ))}
             </div>
           </>

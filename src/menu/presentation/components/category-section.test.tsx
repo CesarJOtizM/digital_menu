@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { testUnavailableLabel } from "@/i18n/test-labels";
 import { CategorySection } from "./category-section";
 import type { CategoryView, ItemView } from "../view-model/menu-view-model";
 
@@ -29,7 +30,7 @@ function makeCategory(overrides: Partial<CategoryView> = {}): CategoryView {
 
 describe("CategorySection", () => {
   it("renders the category name as a heading", () => {
-    render(<CategorySection category={makeCategory({ name: "Salads" })} />);
+    render(<CategorySection unavailableLabel={testUnavailableLabel} category={makeCategory({ name: "Salads" })} />);
 
     expect(screen.getByRole("heading", { name: "Salads" })).toBeInTheDocument();
   });
@@ -44,7 +45,7 @@ describe("CategorySection", () => {
       ],
     });
 
-    render(<CategorySection category={category} />);
+    render(<CategorySection unavailableLabel={testUnavailableLabel} category={category} />);
 
     expect(screen.getByText("Fish Tacos")).toBeInTheDocument();
     expect(screen.getByText("KFC")).toBeInTheDocument();
@@ -59,10 +60,10 @@ describe("CategorySection", () => {
       ],
     });
 
-    render(<CategorySection category={category} />);
+    render(<CategorySection unavailableLabel={testUnavailableLabel} category={category} />);
 
     expect(screen.getByText("Available Dish")).toBeInTheDocument();
     expect(screen.getByText("Closed Dish")).toBeInTheDocument();
-    expect(screen.getByText(/unavailable/i)).toBeInTheDocument();
+    expect(screen.getByText(testUnavailableLabel)).toBeInTheDocument();
   });
 });

@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "@/i18n";
+
 export default function GlobalError({
   error: _error,
   reset,
@@ -7,10 +9,12 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useTranslations();
+
   return (
     <div>
-      <h2>Algo salió mal</h2>
-      <button onClick={() => reset()}>Intentar de nuevo</button>
+      <h2>{t("errors.genericTitle")}</h2>
+      <button onClick={() => reset()}>{t("errors.retry")}</button>
     </div>
   );
 }

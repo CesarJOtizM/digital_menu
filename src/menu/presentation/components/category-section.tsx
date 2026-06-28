@@ -3,6 +3,7 @@ import type { CategoryView } from "../view-model/menu-view-model";
 
 interface CategorySectionProps {
   readonly category: CategoryView;
+  readonly unavailableLabel: string;
 }
 
 /**
@@ -10,7 +11,10 @@ interface CategorySectionProps {
  * it, followed by the item rows separated by thin hairline rules. Editorial,
  * spacious — not a card grid.
  */
-export function CategorySection({ category }: CategorySectionProps) {
+export function CategorySection({
+  category,
+  unavailableLabel,
+}: CategorySectionProps) {
   return (
     <section className="mt-10 first:mt-0" id={`category-${category.id}`}>
       <h2 className="font-heading text-2xl font-medium tracking-wide text-stone-800">
@@ -20,7 +24,7 @@ export function CategorySection({ category }: CategorySectionProps) {
 
       <div className="divide-y divide-stone-200/70">
         {category.items.map((item) => (
-          <ItemRow key={item.id} item={item} />
+          <ItemRow key={item.id} item={item} unavailableLabel={unavailableLabel} />
         ))}
       </div>
     </section>

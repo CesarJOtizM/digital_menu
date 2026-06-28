@@ -4,6 +4,7 @@ import type { ItemView } from "../view-model/menu-view-model";
 
 interface ItemRowProps {
   readonly item: ItemView;
+  readonly unavailableLabel: string;
 }
 
 /**
@@ -14,7 +15,7 @@ interface ItemRowProps {
  *
  * Out-of-window items are SHOWN MARKED unavailable (dimmed + badge), never hidden.
  */
-export function ItemRow({ item }: ItemRowProps) {
+export function ItemRow({ item, unavailableLabel }: ItemRowProps) {
   return (
     <article
       className={cn(
@@ -39,7 +40,7 @@ export function ItemRow({ item }: ItemRowProps) {
           </h3>
           {item.unavailable ? (
             <span className="rounded-full border border-stone-400 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-stone-500">
-              Unavailable
+              {unavailableLabel}
             </span>
           ) : null}
           <span

@@ -17,11 +17,15 @@ function mimeToExt(mimeType: string): string {
   return MIME_MAP[mimeType] ?? "jpg";
 }
 
+const UPLOAD_DIR = path.join(
+  /* turbopackIgnore: true */ process.cwd(),
+  "public",
+  "uploads",
+  "items",
+);
+
 export class LocalImageStorage implements ImageStoragePort {
-  private readonly uploadDir = path.join(
-    process.cwd(),
-    "public/uploads/items",
-  );
+  private readonly uploadDir = UPLOAD_DIR;
 
   async store(
     buffer: Buffer,
@@ -56,13 +60,21 @@ export class LocalImageStorage implements ImageStoragePort {
   }
 
   async delete(filePath: string): Promise<void> {
-    const abs = path.join(process.cwd(), "public", filePath);
+    const abs = path.join(
+      /* turbopackIgnore: true */ process.cwd(),
+      "public",
+      filePath.replace(/^\//, ""),
+    );
     await fs.unlink(abs).catch((err: NodeJS.ErrnoException) => {
       if (err.code !== "ENOENT") throw err;
     });
 
     const thumbPath = filePath.replace(/\.(\w+)$/, "-thumb.$1");
-    const absThumb = path.join(process.cwd(), "public", thumbPath);
+    const absThumb = path.join(
+      /* turbopackIgnore: true */ process.cwd(),
+      "public",
+      thumbPath.replace(/^\//, ""),
+    );
     await fs.unlink(absThumb).catch((err: NodeJS.ErrnoException) => {
       if (err.code !== "ENOENT") throw err;
     });

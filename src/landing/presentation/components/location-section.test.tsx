@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { testLandingPageLabels } from "@/i18n/test-labels";
 import { LocationSection } from "./location-section";
 
 const baseLocation = {
@@ -11,19 +12,29 @@ const baseLocation = {
   mapUrl: "https://maps.google.com/?q=Azahar+Condado",
 } as const;
 
+const locationLabels = {
+  mapTitle: testLandingPageLabels.mapTitle(baseLocation.address),
+  openInMapsLabel: testLandingPageLabels.openInMaps,
+};
+
 describe("LocationSection", () => {
   it("renders the heading, address and embedded map", () => {
-    render(<LocationSection location={baseLocation} />);
+    render(
+      <LocationSection location={baseLocation} {...locationLabels} />,
+    );
 
     expect(screen.getByRole("heading", { name: "Location" })).toBeInTheDocument();
     expect(screen.getByText("886 Ashford Ave, San Juan, PR")).toBeInTheDocument();
-    expect(
-      screen.getByTitle("Mapa — 886 Ashford Ave, San Juan, PR"),
-    ).toHaveAttribute("src", baseLocation.mapEmbedUrl);
+    expect(screen.getByTitle(locationLabels.mapTitle)).toHaveAttribute(
+      "src",
+      baseLocation.mapEmbedUrl,
+    );
   });
 
   it("links to the configured map URL for directions", () => {
-    render(<LocationSection location={baseLocation} />);
+    render(
+      <LocationSection location={baseLocation} {...locationLabels} />,
+    );
 
     expect(screen.getByRole("link", { name: /abrir en google maps/i })).toHaveAttribute(
       "href",
@@ -38,6 +49,7 @@ describe("LocationSection", () => {
           ...baseLocation,
           mapUrl: null,
         }}
+        {...locationLabels}
       />,
     );
 

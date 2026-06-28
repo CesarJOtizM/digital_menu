@@ -6,23 +6,14 @@ import { loadAllergenNameMap } from "@/menu/infrastructure/persistence/load-alle
 import { prisma } from "@/shared/infrastructure/prisma/client";
 import { resolveRootView } from "@/landing/presentation";
 import { buildMenuViewModel, MenuPage } from "@/menu/presentation";
-import type { HomeLinkView } from "@/menu/presentation";
+import type { MenuUiLabels } from "@/menu/presentation";
 import type { Menu } from "@/menu/domain";
-
-const HOME_LINK: HomeLinkView = { label: "Inicio", href: "/" };
+import { getTranslations } from "@/i18n/server";
 
 const resolver = new AvailabilityResolver();
 
-/**
- * Loads the single published menu. Degrades to `null` if the store is
- * unreachable (e.g. no DB during build/preview) so the page renders the empty
- * state instead of crashing — mirrors the config safe-load contract.
- */
 async function loadPublishedMenu(): Promise<Menu | null> {
   try {
-    // The public read-only page reads only the Menu aggregate. It constructs the
-    // repository directly rather than the full DI container so the write-side
-    // image storage (sharp + fs) never gets pulled into this RSC's module graph.
     const repository = new PrismaMenuRepository(prisma);
     return await repository.findPublished();
   } catch {
@@ -30,25 +21,33 @@ async function loadPublishedMenu(): Promise<Menu | null> {
   }
 }
 
-/**
- * Renders the public, read-only Azahar-style menu (RSC). Fetches config
- * (branding, formatter, timezone) and the published menu, projects the domain
- * aggregate into presentation props with availability resolved at the current
- * instant. Shared by `/menu` (always) and `/` (when the landing is disabled), so
- * the menu renders at both with no redirect hop. Display-only — no cart/checkout.
- */
 export async function MenuView() {
-  const [config, menu, allergenNames] = await Promise.all([
+  const [config, menu, allergenNames, { t }] = await Promise.all([
     getConfig(),
     loadPublishedMenu(),
     loadAllergenNameMap(),
+    getTranslations(),
   ]);
+
   const formatPrice = createPriceFormatter({
     locale: config.locale,
     currency: config.currency,
     showSymbol: config.showCurrencySymbol,
   });
-  const homeLink = resolveRootView(config) === "landing" ? HOME_LINK : null;
+
+  const labels: MenuUiLabels = {
+    subtitle: t("menu.subtitle"),
+    emptyTitle: t("menu.emptyTitle"),
+    emptyBody: t("menu.emptyBody"),
+    categoryNavAria: t("menu.categoryNavAria"),
+    unavailable: t("menu.unavailable"),
+    home: t("common.home"),
+  };
+
+  const homeLink =
+    resolveRootView(config) === "landing"
+      ? { label: labels.home, href: "/" }
+      : null;
 
   if (!menu) {
     return (
@@ -59,6 +58,7 @@ export async function MenuView() {
           categories: [],
           homeLink,
         }}
+        labels={labels}
       />
     );
   }
@@ -71,5 +71,5 @@ export async function MenuView() {
     allergenNames,
   });
 
-  return <MenuPage viewModel={{ ...viewModel, homeLink }} />;
+  return <MenuPage viewModel={{ ...viewModel, homeLink }} labels={labels} />;
 }

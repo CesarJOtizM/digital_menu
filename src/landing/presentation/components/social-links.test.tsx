@@ -1,12 +1,14 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { testLandingPageLabels } from "@/i18n/test-labels";
 import { SocialLinks } from "./social-links";
 
 describe("SocialLinks", () => {
   it("renders one link per social entry with its href", () => {
     render(
       <SocialLinks
+        ariaLabel={testLandingPageLabels.socialLinksAria}
         links={[
           { label: "Instagram", url: "https://instagram.com/azahar" },
           { label: "WhatsApp", url: "https://wa.me/123" },
@@ -25,7 +27,9 @@ describe("SocialLinks", () => {
   });
 
   it("renders nothing when there are no links", () => {
-    const { container } = render(<SocialLinks links={[]} />);
+    const { container } = render(
+      <SocialLinks ariaLabel={testLandingPageLabels.socialLinksAria} links={[]} />,
+    );
 
     expect(container).toBeEmptyDOMElement();
   });

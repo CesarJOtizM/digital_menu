@@ -8,29 +8,56 @@ import { LandingHero } from "./landing-hero";
 import { LocationSection } from "./location-section";
 import { PrivateDiningSection } from "./private-dining-section";
 import { LandingJsonLd } from "./landing-json-ld";
-import { buildLandingNavigationFromViewModel } from "../landing-navigation";
+import {
+  buildLandingNavigationFromViewModel,
+  type LandingNavLabels,
+} from "../landing-navigation";
 import type { LandingViewModel } from "../landing-view-model";
+import { getTranslations } from "@/i18n/server";
+import { LanguageSwitcher } from "@/i18n";
 
-interface LandingPageProps {
-  readonly viewModel: LandingViewModel;
-  readonly siteUrl: string;
+interface LandingPageLabels {
+  readonly nav: LandingNavLabels;
+  readonly footerMenu: string;
+  readonly footerPage: string;
+  readonly followUs: string;
+  readonly copyright: string;
+  readonly mainNavAria: string;
+  readonly socialLinksAria: string;
+  readonly mapTitle: (address: string) => string;
+  readonly openInMaps: string;
 }
 
-/**
- * Azahar-style landing mirroring azaharpr.com: sticky header, hero with CTA,
- * welcome copy, feature sections, private dining, info grid, and sectioned footer.
- */
-export function LandingPage({ viewModel, siteUrl }: LandingPageProps) {
+interface LandingPageContentProps {
+  readonly viewModel: LandingViewModel;
+  readonly siteUrl: string;
+  readonly labels: LandingPageLabels;
+  readonly showLanguageSwitcher?: boolean;
+}
+
+export function LandingPageContent({
+  viewModel,
+  siteUrl,
+  labels,
+  showLanguageSwitcher = false,
+}: LandingPageContentProps) {
   const hasInfoGrid =
     viewModel.hours !== null ||
     viewModel.location !== null ||
     viewModel.contact !== null;
-  const navigation = buildLandingNavigationFromViewModel(viewModel);
+  const navigation = buildLandingNavigationFromViewModel(viewModel, labels.nav);
 
   return (
     <div className="animate-menu-enter menu-surface min-h-screen">
       <LandingJsonLd viewModel={viewModel} siteUrl={siteUrl} />
-      <LandingHeader navigation={navigation} />
+      {showLanguageSwitcher ? (
+        <div className="sticky top-0 z-50 border-b border-stone-200/80 bg-white/95 backdrop-blur-sm">
+          <div className="mx-auto flex max-w-5xl items-center justify-end px-6 py-2">
+            <LanguageSwitcher />
+          </div>
+        </div>
+      ) : null}
+      <LandingHeader navigation={navigation} mainNavAria={labels.mainNavAria} />
 
       <main>
         <LandingHero hero={viewModel.hero} />
@@ -61,6 +88,8 @@ export function LandingPage({ viewModel, siteUrl }: LandingPageProps) {
                   location={viewModel.location}
                   align="left"
                   id="location"
+                  mapTitle={labels.mapTitle(viewModel.location.address)}
+                  openInMapsLabel={labels.openInMaps}
                 />
               ) : null}
               {viewModel.contact ? (
@@ -71,7 +100,51 @@ export function LandingPage({ viewModel, siteUrl }: LandingPageProps) {
         ) : null}
       </main>
 
-      <LandingFooter navigation={navigation} social={viewModel.social} />
+      <LandingFooter
+        navigation={navigation}
+        social={viewModel.social}
+        labels={{
+          menu: labels.footerMenu,
+          page: labels.footerPage,
+          followUs: labels.followUs,
+          copyright: labels.copyright,
+        }}
+        socialLinksAria={labels.socialLinksAria}
+      />
     </div>
+  );
+}
+
+interface LandingPageProps {
+  readonly viewModel: LandingViewModel;
+  readonly siteUrl: string;
+}
+
+export async function LandingPage({ viewModel, siteUrl }: LandingPageProps) {
+  const { t } = await getTranslations();
+
+  return (
+    <LandingPageContent
+      viewModel={viewModel}
+      siteUrl={siteUrl}
+      showLanguageSwitcher
+      labels={{
+        nav: {
+          menu: t("landing.menu"),
+          about: t("landing.about"),
+          contact: t("landing.contact"),
+          reservations: t("landing.reservations"),
+          viewMenu: t("landing.viewMenu"),
+        },
+        footerMenu: t("landing.footerMenu"),
+        footerPage: t("landing.footerPage"),
+        followUs: t("landing.followUs"),
+        copyright: t("landing.copyright", { year: new Date().getFullYear() }),
+        mainNavAria: t("landing.mainNavAria"),
+        socialLinksAria: t("landing.socialLinksAria"),
+        mapTitle: (address) => t("landing.mapTitle", { address }),
+        openInMaps: t("landing.openInMaps"),
+      }}
+    />
   );
 }

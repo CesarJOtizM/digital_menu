@@ -5,21 +5,17 @@ interface CategoryNavItem {
 
 interface CategoryNavProps {
   readonly categories: readonly CategoryNavItem[];
+  readonly ariaLabel: string;
 }
 
-/**
- * Azahar-style category filter strip near the top of the menu. Renders each
- * category as an in-page anchor pill linking to its section. Pure navigation —
- * no ordering controls. Renders nothing when there are no categories.
- */
-export function CategoryNav({ categories }: CategoryNavProps) {
+export function CategoryNav({ categories, ariaLabel }: CategoryNavProps) {
   if (categories.length === 0) {
     return null;
   }
 
   return (
     <nav
-      aria-label="Categorías de la carta"
+      aria-label={ariaLabel}
       className="flex flex-wrap justify-center gap-2 border-y border-stone-200 py-3"
     >
       {categories.map((category) => (
