@@ -168,7 +168,10 @@
     "emptyTitle": "Estamos preparando la carta",
     "emptyBody": "Vuelve pronto — estamos montando algo especial.",
     "categoryNavAria": "Categorías de la carta",
-    "unavailable": "No disponible"
+    "unavailable": "No disponible",
+    "viewToggleAria": "Diseño de la carta",
+    "listView": "Lista",
+    "cardsView": "Tarjetas"
   },
   "landing": {
     "menu": "Carta",

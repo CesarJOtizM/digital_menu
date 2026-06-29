@@ -1,0 +1,141 @@
+"use client";
+
+import { useCallback, useSyncExternalStore } from "react";
+import { cn } from "@/lib/cn";
+import { CardGrid } from "./card-grid";
+import { CategorySection } from "./category-section";
+import type { MenuUiLabels } from "../menu-ui-labels";
+import {
+  DEFAULT_MENU_VIEW_MODE,
+  normalizeMenuViewMode,
+  type MenuViewMode,
+} from "../view-model/menu-view-mode";
+import type { CategoryView } from "../view-model/menu-view-model";
+
+const STORAGE_KEY = "menu:view-mode";
+
+/**
+ * A tiny localStorage-backed store for the chosen view mode. Reading it through
+ * {@link useSyncExternalStore} keeps the switcher SSR-safe WITHOUT a
+ * setState-in-effect: the server snapshot is always the brand default, the
+ * client snapshot reads the persisted value, and writes notify subscribers so
+ * the toggle re-renders. This avoids both hydration mismatch and cascading
+ * effect renders.
+ */
+const viewModeStore = {
+  subscribe(onChange: () => void): () => void {
+    if (typeof window === "undefined") {
+      return () => {};
+    }
+    window.addEventListener("storage", onChange);
+    window.addEventListener("menu:view-mode-change", onChange);
+    return () => {
+      window.removeEventListener("storage", onChange);
+      window.removeEventListener("menu:view-mode-change", onChange);
+    };
+  },
+  getSnapshot(): MenuViewMode {
+    return normalizeMenuViewMode(window.localStorage.getItem(STORAGE_KEY));
+  },
+  getServerSnapshot(): MenuViewMode {
+    return DEFAULT_MENU_VIEW_MODE;
+  },
+  set(mode: MenuViewMode): void {
+    window.localStorage.setItem(STORAGE_KEY, mode);
+    window.dispatchEvent(new Event("menu:view-mode-change"));
+  },
+};
+
+interface MenuViewSwitcherProps {
+  readonly categories: readonly CategoryView[];
+  readonly labels: MenuUiLabels;
+}
+
+interface ViewToggleProps {
+  readonly mode: MenuViewMode;
+  readonly onSelect: (mode: MenuViewMode) => void;
+  readonly labels: MenuUiLabels;
+}
+
+function ViewToggle({ mode, onSelect, labels }: ViewToggleProps) {
+  const options: ReadonlyArray<{ value: MenuViewMode; label: string }> = [
+    { value: "list", label: labels.listView },
+    { value: "cards", label: labels.cardsView },
+  ];
+
+  return (
+    <div
+      role="group"
+      aria-label={labels.viewToggleAria}
+      className="inline-flex items-center gap-1 rounded-full border border-stone-300 bg-stone-50/80 p-1"
+    >
+      {options.map((option) => {
+        const active = option.value === mode;
+        return (
+          <button
+            key={option.value}
+            type="button"
+            aria-pressed={active}
+            onClick={() => onSelect(option.value)}
+            className={cn(
+              "rounded-full px-3.5 py-1 text-xs font-medium uppercase tracking-wide transition-colors",
+              active
+                ? "bg-stone-800 text-stone-50"
+                : "text-stone-500 hover:text-stone-800",
+            )}
+          >
+            {option.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/**
+ * Client-side layout switcher for the public menu. It is the ONLY interactive
+ * piece in the menu tree: the server builds the pure {@link CategoryView} array
+ * (plain serializable data) and hands it down as a prop, so the rest of the tree
+ * stays server-rendered.
+ *
+ * SSR-safe: the first render ALWAYS uses the brand default ({@link
+ * DEFAULT_MENU_VIEW_MODE} = "list"), matching what the server emits. A mount
+ * effect then reads the persisted preference from localStorage and updates the
+ * mode — so there is no hydration mismatch, only a possible post-hydration
+ * switch when the visitor previously chose cards.
+ */
+export function MenuViewSwitcher({ categories, labels }: MenuViewSwitcherProps) {
+  const mode = useSyncExternalStore(
+    viewModeStore.subscribe,
+    viewModeStore.getSnapshot,
+    viewModeStore.getServerSnapshot,
+  );
+
+  const selectMode = useCallback((next: MenuViewMode) => {
+    viewModeStore.set(next);
+  }, []);
+
+  return (
+    <div>
+      <div className="mt-6 flex justify-center">
+        <ViewToggle mode={mode} onSelect={selectMode} labels={labels} />
+      </div>
+
+      <div className="mt-6">
+        {mode === "cards" ? (
+          <CardGrid categories={categories} unavailableLabel={labels.unavailable} />
+        ) : (
+          <div>
+            {categories.map((category) => (
+              <CategorySection
+                key={category.id}
+                category={category}
+                unavailableLabel={labels.unavailable}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

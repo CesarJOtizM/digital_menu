@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { testMenuUiLabels } from "@/i18n/test-labels";
 import { MenuPage } from "./menu-page";
 import type { MenuViewModel } from "../view-model/menu-view-model";
@@ -94,6 +94,46 @@ describe("MenuPage", () => {
     expect(screen.queryByRole("button", { name: /add|cart|order|checkout/i })).not.toBeInTheDocument();
     expect(screen.queryByText(/checkout/i)).not.toBeInTheDocument();
     expect(screen.queryByRole("spinbutton")).not.toBeInTheDocument();
+  });
+
+  it("offers an accessible list/cards layout toggle for a non-empty menu", () => {
+    render(<MenuPage viewModel={makeViewModel()} labels={testMenuUiLabels} />);
+
+    expect(
+      screen.getByRole("group", { name: testMenuUiLabels.viewToggleAria }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: testMenuUiLabels.listView }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: testMenuUiLabels.cardsView }),
+    ).toBeInTheDocument();
+  });
+
+  it("switches the non-empty menu to the image-forward card grid on toggle", () => {
+    render(<MenuPage viewModel={makeViewModel()} labels={testMenuUiLabels} />);
+
+    // Default list layout: the text-only item shows no image.
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: testMenuUiLabels.cardsView }));
+
+    // Card layout renders a placeholder image, and the dish is still present.
+    expect(screen.getByRole("img", { name: /croquetas/i })).toBeInTheDocument();
+    expect(screen.getByText("Croquetas")).toBeInTheDocument();
+  });
+
+  it("does not render the layout toggle when the menu is empty", () => {
+    render(
+      <MenuPage
+        viewModel={makeViewModel({ isEmpty: true, categories: [] })}
+        labels={testMenuUiLabels}
+      />,
+    );
+
+    expect(
+      screen.queryByRole("group", { name: testMenuUiLabels.viewToggleAria }),
+    ).not.toBeInTheDocument();
   });
 
   it("renders a back link in the corner when the landing is enabled", () => {

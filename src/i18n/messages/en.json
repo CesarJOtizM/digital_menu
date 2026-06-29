@@ -168,7 +168,10 @@
     "emptyTitle": "We're preparing the menu",
     "emptyBody": "Check back soon — we're putting something special together.",
     "categoryNavAria": "Menu categories",
-    "unavailable": "Unavailable"
+    "unavailable": "Unavailable",
+    "viewToggleAria": "Menu layout",
+    "listView": "List",
+    "cardsView": "Cards"
   },
   "landing": {
     "menu": "Menu",

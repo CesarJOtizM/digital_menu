@@ -1,6 +1,6 @@
 import { CategoryNav } from "./category-nav";
-import { CategorySection } from "./category-section";
 import { EmptyMenuState } from "./empty-menu-state";
+import { MenuViewSwitcher } from "./menu-view-switcher";
 import { ViewHomeLink } from "./view-home-link";
 import type { MenuUiLabels } from "../menu-ui-labels";
 import type { MenuViewModel } from "../view-model/menu-view-model";
@@ -41,15 +41,10 @@ export function MenuPage({ viewModel, labels }: MenuPageProps) {
               categories={navCategories}
               ariaLabel={labels.categoryNavAria}
             />
-            <div className="mt-8">
-              {viewModel.categories.map((category) => (
-                <CategorySection
-                  key={category.id}
-                  category={category}
-                  unavailableLabel={labels.unavailable}
-                />
-              ))}
-            </div>
+            <MenuViewSwitcher
+              categories={viewModel.categories}
+              labels={labels}
+            />
           </>
         )}
       </div>
