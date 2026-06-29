@@ -1,4 +1,4 @@
-import { resolveAdminError } from "@/i18n";
+import { resolveAdminError, type Translator } from "@/i18n";
 import { getTranslations } from "@/i18n/server";
 import { GeneralSettingsForm } from "./_components/general-settings-form";
 import { PasswordChangeForm } from "./_components/password-change-form";
@@ -17,7 +17,7 @@ export async function generateMetadata() {
 }
 
 function resolveSavedMessage(
-  t: ReturnType<typeof getTranslations> extends Promise<infer R> ? R["t"] : never,
+  t: Translator,
   saved: string | undefined,
 ): string | null {
   if (saved === "general") {
