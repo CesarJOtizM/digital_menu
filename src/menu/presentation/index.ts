@@ -1,4 +1,10 @@
 export {
+  localizedDescription,
+  localizedLabel,
+  localizedName,
+} from "./localize-menu-content";
+
+export {
   buildMenuViewModel,
   type MenuViewModel,
   type HomeLinkView,
@@ -18,7 +24,7 @@ export {
   type MenuViewMode,
 } from "./view-model/menu-view-mode";
 
-export { type MenuUiLabels } from "./menu-ui-labels";
+export { type ItemDetailLabels, type MenuUiLabels } from "./menu-ui-labels";
 export { MenuPage } from "./components/menu-page";
 export { CategorySection } from "./components/category-section";
 export { CardGrid } from "./components/card-grid";

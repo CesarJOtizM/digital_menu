@@ -1,11 +1,18 @@
 import Link from "next/link";
 import { getTranslations } from "@/i18n/server";
 import { resolveAdminError, type TranslationParams } from "@/i18n";
+import { adminActionCancelClass } from "../../_components/admin-action-styles";
+import { FormSubmitButton } from "../../_components/form-submit-button";
+import {
+  ContentLocaleField,
+  ContentLocaleTabs,
+} from "./content-locale-tabs";
 import { saveCategoryAction } from "../actions";
 
 interface CategoryFormProps {
   categoryId?: string;
   initialName?: string;
+  initialNameEn?: string;
   title: string;
   error?: string;
   errorParams?: TranslationParams;
@@ -14,6 +21,7 @@ interface CategoryFormProps {
 export async function CategoryForm({
   categoryId,
   initialName = "",
+  initialNameEn = "",
   title,
   error,
   errorParams,
@@ -22,15 +30,8 @@ export async function CategoryForm({
   const errorMessage = resolveAdminError(t, error, errorParams);
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-10">
-      <Link
-        href="/dashboard/menu"
-        className="text-sm text-neutral-500 hover:text-neutral-800"
-      >
-        {t("dashboard.backToMenu")}
-      </Link>
-
-      <h1 className="mt-4 text-2xl font-medium">{title}</h1>
+    <div className="space-y-6">
+      <h1 className="text-2xl font-medium">{title}</h1>
 
       {errorMessage ? (
         <p
@@ -43,38 +44,44 @@ export async function CategoryForm({
 
       <form
         action={saveCategoryAction}
-        className="mt-8 space-y-5 rounded-lg border border-neutral-200 bg-white p-5"
+        className="space-y-5 rounded-lg border border-neutral-200 bg-white p-5"
       >
         {categoryId ? <input type="hidden" name="categoryId" value={categoryId} /> : null}
+        <input type="hidden" name="returnTo" value="/dashboard/menu/categories" />
 
-        <div className="space-y-1">
-          <label htmlFor="name" className="text-sm font-medium">
-            {t("dashboard.categoryName")}
-          </label>
-          <input
-            id="name"
-            name="name"
-            required
-            defaultValue={initialName}
-            className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
-          />
-        </div>
+        <ContentLocaleTabs
+          esPanel={
+            <ContentLocaleField
+              id="name"
+              label={t("dashboard.categoryName")}
+              name="name"
+              defaultValue={initialName}
+              required
+            />
+          }
+          enPanel={
+            <ContentLocaleField
+              id="nameEn"
+              label={t("dashboard.categoryName")}
+              name="nameEn"
+              defaultValue={initialNameEn}
+              hint={t("contentLocale.optionalHint")}
+            />
+          }
+        />
 
         <div className="flex flex-wrap gap-3 pt-2">
-          <button
-            type="submit"
-            className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
-          >
+          <FormSubmitButton variant="primary">
             {t("dashboard.saveCategory")}
-          </button>
+          </FormSubmitButton>
           <Link
-            href="/dashboard/menu"
-            className="rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium hover:bg-neutral-50"
+            href="/dashboard/menu/categories"
+            className={adminActionCancelClass}
           >
             {t("common.cancel")}
           </Link>
         </div>
       </form>
-    </main>
+    </div>
   );
 }

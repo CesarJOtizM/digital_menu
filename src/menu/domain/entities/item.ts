@@ -7,8 +7,10 @@ import { UnknownVariant } from "../errors";
 export interface ItemProps {
   id: string;
   name: string;
+  nameEn?: string | null;
   slug: Slug;
   description: string;
+  descriptionEn?: string | null;
   basePrice: Price;
   imageSource: ImageSource;
   active: boolean;
@@ -32,8 +34,10 @@ export class Item extends Entity<string> {
   private constructor(
     id: string,
     private readonly _name: string,
+    private readonly _nameEn: string | null,
     private readonly _slug: Slug,
     private readonly _description: string,
+    private readonly _descriptionEn: string | null,
     private readonly _basePrice: Price,
     private readonly _imageSource: ImageSource,
     private readonly _active: boolean,
@@ -50,8 +54,10 @@ export class Item extends Entity<string> {
     return new Item(
       props.id,
       props.name,
+      props.nameEn ?? null,
       props.slug,
       props.description,
+      props.descriptionEn ?? null,
       props.basePrice,
       props.imageSource,
       props.active,
@@ -67,12 +73,20 @@ export class Item extends Entity<string> {
     return this._name;
   }
 
+  get nameEn(): string | null {
+    return this._nameEn;
+  }
+
   get slug(): Slug {
     return this._slug;
   }
 
   get description(): string {
     return this._description;
+  }
+
+  get descriptionEn(): string | null {
+    return this._descriptionEn;
   }
 
   get basePrice(): Price {
@@ -141,8 +155,10 @@ export class Item extends Entity<string> {
 
   withDetails(details: {
     name?: string;
+    nameEn?: string | null;
     slug?: Slug;
     description?: string;
+    descriptionEn?: string | null;
     basePrice?: Price;
     active?: boolean;
     position?: number;
@@ -157,8 +173,10 @@ export class Item extends Entity<string> {
   private rebuild(
     patch: Partial<{
       name: string;
+      nameEn: string | null;
       slug: Slug;
       description: string;
+      descriptionEn: string | null;
       basePrice: Price;
       imageSource: ImageSource;
       active: boolean;
@@ -172,8 +190,10 @@ export class Item extends Entity<string> {
     return new Item(
       this.id,
       patch.name ?? this._name,
+      patch.nameEn ?? this._nameEn,
       patch.slug ?? this._slug,
       patch.description ?? this._description,
+      patch.descriptionEn ?? this._descriptionEn,
       patch.basePrice ?? this._basePrice,
       patch.imageSource ?? this._imageSource,
       patch.active ?? this._active,

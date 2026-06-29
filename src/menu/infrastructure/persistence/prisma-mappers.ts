@@ -26,6 +26,7 @@ export interface AvailabilityColumns {
 export interface ModifierOptionRow {
   id: string;
   name: string;
+  nameEn: string | null;
   priceDelta: number;
   sortOrder: number;
 }
@@ -33,6 +34,7 @@ export interface ModifierOptionRow {
 export interface ModifierGroupRow {
   id: string;
   name: string;
+  nameEn: string | null;
   min: number;
   max: number;
   sortOrder: number;
@@ -42,6 +44,7 @@ export interface ModifierGroupRow {
 export interface VariantRow {
   id: string;
   label: string;
+  labelEn: string | null;
   price: number;
   sortOrder: number;
 }
@@ -49,8 +52,10 @@ export interface VariantRow {
 export interface ItemRow extends AvailabilityColumns {
   id: string;
   name: string;
+  nameEn: string | null;
   slug: string;
   description: string;
+  descriptionEn: string | null;
   basePrice: number;
   imageUrl: string | null;
   imagePath: string | null;
@@ -64,6 +69,7 @@ export interface ItemRow extends AvailabilityColumns {
 export interface CategoryRow extends AvailabilityColumns {
   id: string;
   name: string;
+  nameEn: string | null;
   slug: string;
   sortOrder: number;
   description: string | null;
@@ -136,8 +142,10 @@ export function toDomainItem(row: ItemRow): Item {
   return Item.create({
     id: row.id,
     name: row.name,
+    nameEn: row.nameEn,
     slug: Slug.fromExisting(row.slug),
     description: row.description,
+    descriptionEn: row.descriptionEn,
     basePrice: Price.create(row.basePrice),
     imageSource: ImageSource.resolve(row.imagePath, row.imageUrl),
     active: row.active,
@@ -153,6 +161,7 @@ function toDomainVariant(row: VariantRow): Variant {
   return Variant.create({
     id: row.id,
     label: row.label,
+    labelEn: row.labelEn,
     price: Price.create(row.price),
     position: row.sortOrder,
   });
@@ -162,6 +171,7 @@ function toDomainModifierGroup(row: ModifierGroupRow): ModifierGroup {
   return ModifierGroup.create({
     id: row.id,
     name: row.name,
+    nameEn: row.nameEn,
     min: row.min,
     max: row.max,
     position: row.sortOrder,
@@ -173,6 +183,7 @@ function toDomainModifierOption(row: ModifierOptionRow): ModifierOption {
   return ModifierOption.create({
     id: row.id,
     name: row.name,
+    nameEn: row.nameEn,
     priceDelta: Price.create(row.priceDelta),
   });
 }
@@ -181,6 +192,7 @@ function toDomainCategory(row: CategoryRow): Category {
   return Category.create({
     id: row.id,
     name: row.name,
+    nameEn: row.nameEn,
     slug: Slug.fromExisting(row.slug),
     position: row.sortOrder,
     items: row.items.map(toDomainItem),
@@ -204,8 +216,10 @@ export function toPersistenceItem(item: Item): ItemRow {
   return {
     id: item.id,
     name: item.name,
+    nameEn: item.nameEn,
     slug: item.slug.value,
     description: item.description,
+    descriptionEn: item.descriptionEn,
     basePrice: item.basePrice.value,
     imageUrl: image.imageUrl,
     imagePath: image.imagePath,
@@ -222,6 +236,7 @@ function toPersistenceVariant(variant: Variant): VariantRow {
   return {
     id: variant.id,
     label: variant.label,
+    labelEn: variant.labelEn,
     price: variant.price.value,
     sortOrder: variant.position,
   };
@@ -231,10 +246,14 @@ function toPersistenceModifierGroup(group: ModifierGroup): ModifierGroupRow {
   return {
     id: group.id,
     name: group.name,
+    nameEn: group.nameEn,
     min: group.min,
     max: group.max,
     sortOrder: group.position,
-    options: group.options.map(toPersistenceModifierOption),
+    options: group.options.map((option, index) => ({
+      ...toPersistenceModifierOption(option),
+      sortOrder: index,
+    })),
   };
 }
 
@@ -242,6 +261,7 @@ function toPersistenceModifierOption(option: ModifierOption): ModifierOptionRow 
   return {
     id: option.id,
     name: option.name,
+    nameEn: option.nameEn,
     priceDelta: option.priceDelta.value,
     sortOrder: 0,
   };
@@ -252,6 +272,7 @@ function toPersistenceCategory(category: Category): CategoryRow {
   return {
     id: category.id,
     name: category.name,
+    nameEn: category.nameEn,
     slug: category.slug.value,
     sortOrder: category.position,
     description: null,

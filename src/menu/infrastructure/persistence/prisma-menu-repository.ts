@@ -1,7 +1,7 @@
 import "server-only";
 
 import type { PrismaClient } from "@prisma/client";
-import type { Menu } from "@/menu/domain";
+import type { Category, Item, Menu } from "@/menu/domain";
 import type { MenuRepository } from "@/menu/application/ports/menu-repository";
 import { prismaMenuToRow, type PrismaMenuWithRelations } from "./prisma-row";
 import { toDomainMenu, packAvailability } from "./prisma-mappers";
@@ -69,12 +69,14 @@ export class PrismaMenuRepository implements MenuRepository {
             id: category.id,
             menuId: menu.id,
             name: category.name,
+            nameEn: category.nameEn,
             slug: category.slug.value,
             sortOrder: category.position,
             ...availability,
           },
           update: {
             name: category.name,
+            nameEn: category.nameEn,
             slug: category.slug.value,
             sortOrder: category.position,
             ...availability,
@@ -91,5 +93,81 @@ export class PrismaMenuRepository implements MenuRepository {
         }
       }
     });
+  }
+
+  async updateCategoryOrder(
+    menuId: string,
+    orderedCategoryIds: readonly string[],
+  ): Promise<void> {
+    await this.prisma.$transaction(
+      orderedCategoryIds.map((categoryId, index) =>
+        this.prisma.category.update({
+          where: { id: categoryId, menuId },
+          data: { sortOrder: index },
+        }),
+      ),
+    );
+  }
+
+  async updateItemOrder(
+    categoryId: string,
+    orderedItemIds: readonly string[],
+  ): Promise<void> {
+    await this.prisma.$transaction(
+      orderedItemIds.map((itemId, index) =>
+        this.prisma.item.update({
+          where: { id: itemId, categoryId },
+          data: { sortOrder: index },
+        }),
+      ),
+    );
+  }
+
+  async updateItemActive(
+    categoryId: string,
+    itemId: string,
+    active: boolean,
+  ): Promise<void> {
+    await this.prisma.item.update({
+      where: { id: itemId, categoryId },
+      data: { active },
+    });
+  }
+
+  async upsertCategory(menuId: string, category: Category): Promise<void> {
+    const availability = packAvailability(category.availability);
+    await this.prisma.category.upsert({
+      where: { id: category.id },
+      create: {
+        id: category.id,
+        menuId,
+        name: category.name,
+        nameEn: category.nameEn,
+        slug: category.slug.value,
+        sortOrder: category.position,
+        ...availability,
+      },
+      update: {
+        name: category.name,
+        nameEn: category.nameEn,
+        slug: category.slug.value,
+        sortOrder: category.position,
+        ...availability,
+      },
+    });
+  }
+
+  async deleteCategoryById(categoryId: string): Promise<void> {
+    await this.prisma.category.delete({ where: { id: categoryId } });
+  }
+
+  async saveItem(categoryId: string, item: Item): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      await saveItemTree(tx, categoryId, item);
+    });
+  }
+
+  async deleteItemById(itemId: string): Promise<void> {
+    await this.prisma.item.delete({ where: { id: itemId } });
   }
 }

@@ -22,12 +22,12 @@ async function loadPublishedMenu(): Promise<Menu | null> {
 }
 
 export async function MenuView() {
-  const [config, menu, allergenNames, { t }] = await Promise.all([
+  const [config, menu, { locale, t }] = await Promise.all([
     getConfig(),
     loadPublishedMenu(),
-    loadAllergenNameMap(),
     getTranslations(),
   ]);
+  const allergenNames = await loadAllergenNameMap(locale);
 
   const formatPrice = createPriceFormatter({
     locale: config.locale,
@@ -45,6 +45,15 @@ export async function MenuView() {
     viewToggleAria: t("menu.viewToggleAria"),
     listView: t("menu.listView"),
     cardsView: t("menu.cardsView"),
+    itemDetail: {
+      unavailable: t("menu.unavailable"),
+      closeDetail: t("menu.closeDetail"),
+      detailSheetAria: t("menu.detailSheetAria"),
+      viewDetailAria: t("menu.viewDetailAria"),
+      variantsSection: t("menu.variantsSection"),
+      modifiersSection: t("menu.modifiersSection"),
+      allergensSection: t("menu.allergensSection"),
+    },
   };
 
   const homeLink =
@@ -71,6 +80,7 @@ export async function MenuView() {
     now: new Date(),
     timezone: config.timezone,
     formatPrice,
+    locale,
     allergenNames,
   });
 

@@ -8,7 +8,9 @@ export function itemToFormValues(item: Item): ItemFormValues {
 
   return {
     name: item.name,
+    nameEn: item.nameEn ?? "",
     description: item.description,
+    descriptionEn: item.descriptionEn ?? "",
     price: formatCentavosForInput(item.basePrice.value),
     active: item.active,
     hasImage,
@@ -16,16 +18,19 @@ export function itemToFormValues(item: Item): ItemFormValues {
     variants: item.variants.map((variant) => ({
       id: variant.id,
       label: variant.label,
+      labelEn: variant.labelEn ?? "",
       price: formatCentavosForInput(variant.price.value),
     })),
     modifierGroups: item.modifierGroups.map((group) => ({
       id: group.id,
       name: group.name,
+      nameEn: group.nameEn ?? "",
       min: String(group.min),
       max: String(group.max),
       options: group.options.map((option) => ({
         id: option.id,
         name: option.name,
+        nameEn: option.nameEn ?? "",
         priceDelta: formatCentavosForInput(option.priceDelta.value),
       })),
     })),

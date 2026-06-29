@@ -147,12 +147,12 @@ interface SeedAllergen {
 // ── Allergen vocabulary ──────────────────────────────────────────────────────
 
 const ALLERGENS: readonly SeedAllergen[] = [
-  { name: "Gluten", slug: "gluten", icon: "wheat" },
-  { name: "Dairy", slug: "dairy", icon: "milk" },
-  { name: "Shellfish", slug: "shellfish", icon: "shrimp" },
-  { name: "Fish", slug: "fish", icon: "fish" },
-  { name: "Egg", slug: "egg", icon: "egg" },
-  { name: "Nuts", slug: "nuts", icon: "nut" },
+  { name: "Gluten", slug: "gluten", icon: "🌾" },
+  { name: "Dairy", slug: "dairy", icon: "🥛" },
+  { name: "Shellfish", slug: "shellfish", icon: "🦐" },
+  { name: "Fish", slug: "fish", icon: "🐟" },
+  { name: "Egg", slug: "egg", icon: "🥚" },
+  { name: "Nuts", slug: "nuts", icon: "🥜" },
 ] as const;
 
 // ── Menu content (mirrors the Azahar reference menu) ─────────────────────────

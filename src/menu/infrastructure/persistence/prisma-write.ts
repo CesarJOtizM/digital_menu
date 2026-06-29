@@ -30,8 +30,10 @@ export const menuInclude = {
 export interface PrismaItemReadShape {
   id: string;
   name: string;
+  nameEn: string | null;
   slug: string;
   description: string;
+  descriptionEn: string | null;
   basePrice: number;
   imageUrl: string | null;
   imagePath: string | null;
@@ -41,14 +43,15 @@ export interface PrismaItemReadShape {
   availStart: number | null;
   availEnd: number | null;
   allergens: { allergenId: string }[];
-  variants: { id: string; label: string; price: number; sortOrder: number }[];
+  variants: { id: string; label: string; labelEn: string | null; price: number; sortOrder: number }[];
   modifierGroups: {
     id: string;
     name: string;
+    nameEn: string | null;
     min: number;
     max: number;
     sortOrder: number;
-    options: { id: string; name: string; priceDelta: number; sortOrder: number }[];
+    options: { id: string; name: string; nameEn: string | null; priceDelta: number; sortOrder: number }[];
   }[];
 }
 
@@ -57,8 +60,10 @@ export function prismaItemToRow(item: PrismaItemReadShape): ItemRow {
   return {
     id: item.id,
     name: item.name,
+    nameEn: item.nameEn,
     slug: item.slug,
     description: item.description,
+    descriptionEn: item.descriptionEn,
     basePrice: item.basePrice,
     imageUrl: item.imageUrl,
     imagePath: item.imagePath,
@@ -71,18 +76,21 @@ export function prismaItemToRow(item: PrismaItemReadShape): ItemRow {
     variants: item.variants.map((v) => ({
       id: v.id,
       label: v.label,
+      labelEn: v.labelEn,
       price: v.price,
       sortOrder: v.sortOrder,
     })),
     modifierGroups: item.modifierGroups.map((g) => ({
       id: g.id,
       name: g.name,
+      nameEn: g.nameEn,
       min: g.min,
       max: g.max,
       sortOrder: g.sortOrder,
       options: g.options.map((o) => ({
         id: o.id,
         name: o.name,
+        nameEn: o.nameEn,
         priceDelta: o.priceDelta,
         sortOrder: o.sortOrder,
       })),
@@ -108,8 +116,10 @@ export async function saveItemTree(
       id: row.id,
       categoryId,
       name: row.name,
+      nameEn: row.nameEn,
       slug: row.slug,
       description: row.description,
+      descriptionEn: row.descriptionEn,
       basePrice: row.basePrice,
       imageUrl: row.imageUrl,
       imagePath: row.imagePath,
@@ -121,8 +131,10 @@ export async function saveItemTree(
     },
     update: {
       name: row.name,
+      nameEn: row.nameEn,
       slug: row.slug,
       description: row.description,
+      descriptionEn: row.descriptionEn,
       basePrice: row.basePrice,
       imageUrl: row.imageUrl,
       imagePath: row.imagePath,
@@ -144,11 +156,13 @@ export async function saveItemTree(
         id: variant.id,
         itemId: row.id,
         label: variant.label,
+        labelEn: variant.labelEn,
         price: variant.price,
         sortOrder: variant.sortOrder,
       },
       update: {
         label: variant.label,
+        labelEn: variant.labelEn,
         price: variant.price,
         sortOrder: variant.sortOrder,
       },
@@ -165,12 +179,14 @@ export async function saveItemTree(
         id: group.id,
         itemId: row.id,
         name: group.name,
+        nameEn: group.nameEn,
         min: group.min,
         max: group.max,
         sortOrder: group.sortOrder,
       },
       update: {
         name: group.name,
+        nameEn: group.nameEn,
         min: group.min,
         max: group.max,
         sortOrder: group.sortOrder,
@@ -186,11 +202,13 @@ export async function saveItemTree(
           id: option.id,
           groupId: group.id,
           name: option.name,
+          nameEn: option.nameEn,
           priceDelta: option.priceDelta,
           sortOrder: option.sortOrder,
         },
         update: {
           name: option.name,
+          nameEn: option.nameEn,
           priceDelta: option.priceDelta,
           sortOrder: option.sortOrder,
         },

@@ -41,6 +41,7 @@ model Category {
   menuId      String
   menu        Menu     @relation(fields: [menuId], references: [id], onDelete: Cascade)
   name        String
+  nameEn      String?
   slug        String
   sortOrder   Int      @default(0)
   description String?
@@ -63,8 +64,10 @@ model Item {
   categoryId    String
   category      Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   name          String
+  nameEn        String?
   slug          String
   description   String          @default("")
+  descriptionEn String?
   basePrice     Int             // centavos
   imageUrl      String?         // external image source
   imagePath     String?         // local stored image source
@@ -93,6 +96,7 @@ model Variant {
   itemId    String
   item      Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
   label     String
+  labelEn   String?
   price     Int      // absolute centavos
   sortOrder Int      @default(0)
 
@@ -106,6 +110,7 @@ model ModifierGroup {
   itemId    String
   item      Item             @relation(fields: [itemId], references: [id], onDelete: Cascade)
   name      String
+  nameEn    String?
   min       Int              @default(0)
   max       Int              @default(0)
   sortOrder Int              @default(0)
@@ -122,6 +127,7 @@ model ModifierOption {
   groupId    String
   group      ModifierGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
   name       String
+  nameEn     String?
   priceDelta Int           @default(0) // centavos
   sortOrder  Int           @default(0)
 
@@ -132,9 +138,10 @@ model ModifierOption {
 /// Allergen reference vocabulary. Items reference allergens by id through the
 /// ItemAllergen join table (no shared FK in the domain, ids only).
 model Allergen {
-  id    String         @id @default(cuid())
-  name  String
-  slug  String         @unique
+  id     String         @id @default(cuid())
+  name   String
+  nameEn String?
+  slug   String         @unique
   icon  String?
   items ItemAllergen[]
 

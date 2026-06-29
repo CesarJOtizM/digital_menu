@@ -1,9 +1,11 @@
 import { ItemRow } from "./item-row";
-import type { CategoryView } from "../view-model/menu-view-model";
+import type { CategoryView, ItemView } from "../view-model/menu-view-model";
 
 interface CategorySectionProps {
   readonly category: CategoryView;
   readonly unavailableLabel: string;
+  readonly onItemSelect?: (item: ItemView) => void;
+  readonly viewDetailAria?: string;
 }
 
 /**
@@ -14,17 +16,28 @@ interface CategorySectionProps {
 export function CategorySection({
   category,
   unavailableLabel,
+  onItemSelect,
+  viewDetailAria,
 }: CategorySectionProps) {
   return (
-    <section className="mt-10 first:mt-0" id={`category-${category.id}`}>
-      <h2 className="font-heading text-2xl font-medium tracking-wide text-stone-800">
+    <section className="mt-10 first:mt-0">
+      <h2
+        id={`category-${category.id}`}
+        className="scroll-mt-28 font-heading text-2xl font-medium tracking-wide text-stone-800"
+      >
         {category.name}
       </h2>
       <div className="mt-2 border-b border-stone-300" />
 
       <div className="divide-y divide-stone-200/70">
         {category.items.map((item) => (
-          <ItemRow key={item.id} item={item} unavailableLabel={unavailableLabel} />
+          <ItemRow
+            key={item.id}
+            item={item}
+            unavailableLabel={unavailableLabel}
+            onSelect={onItemSelect}
+            viewDetailAria={viewDetailAria}
+          />
         ))}
       </div>
     </section>

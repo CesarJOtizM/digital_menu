@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getTranslations } from "@/i18n/server";
+import { localizedName } from "@/menu/presentation/localize-menu-content";
 import { extractAdminErrorParams } from "@/i18n/extract-admin-error-params";
 import { prisma } from "@/shared/infrastructure/prisma/client";
 import { AllergenForm } from "../../_components/allergen-form";
@@ -18,7 +19,7 @@ export default async function EditAllergenPage({
 }) {
   const { id } = await params;
   const query = await searchParams;
-  const { t } = await getTranslations();
+  const { t, locale } = await getTranslations();
 
   const allergen = await prisma.allergen.findUnique({ where: { id } });
   if (!allergen) {
@@ -29,8 +30,11 @@ export default async function EditAllergenPage({
     <AllergenForm
       allergenId={id}
       initialName={allergen.name}
+      initialNameEn={allergen.nameEn ?? ""}
       initialIcon={allergen.icon ?? ""}
-      title={t("allergens.editNamed", { name: allergen.name })}
+      title={t("allergens.editNamed", {
+        name: localizedName(allergen, locale),
+      })}
       error={query.error}
       errorParams={extractAdminErrorParams(query)}
     />

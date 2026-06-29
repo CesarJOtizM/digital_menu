@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { loadAllergenOptions } from "@/menu/infrastructure/persistence/load-allergens";
+import { localizedName } from "@/menu/presentation/localize-menu-content";
 import { getTranslations } from "@/i18n/server";
 import { extractAdminErrorParams } from "@/i18n/extract-admin-error-params";
 import { ItemForm } from "../../_components/item-form";
@@ -26,23 +27,29 @@ export default async function EditItemPage({
     notFound();
   }
 
-  const [{ t }, menu, allergens] = await Promise.all([
+  const [{ t, locale }, menu, allergens] = await Promise.all([
     getTranslations(),
     loadAdminMenu(),
     loadAllergenOptions(),
   ]);
-  const item = menu?.findItem(categoryId, id);
+  if (!menu) {
+    notFound();
+  }
 
-  if (!menu || !item) {
+  const item = menu.findItem(categoryId, id);
+  const category = menu.findCategory(categoryId);
+
+  if (!item || !category) {
     notFound();
   }
 
   return (
     <ItemForm
       categoryId={categoryId}
+      categoryName={localizedName(category, locale)}
       itemId={id}
       allergens={allergens}
-      title={t("dashboard.editItemNamed", { name: item.name })}
+      title={t("dashboard.editItemNamed", { name: localizedName(item, locale) })}
       error={query.error}
       errorParams={extractAdminErrorParams(query)}
       initial={itemToFormValues(item)}

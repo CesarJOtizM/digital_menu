@@ -10,6 +10,7 @@ import {
 export interface ModifierGroupProps {
   id: string;
   name: string;
+  nameEn?: string | null;
   min: number;
   max: number;
   position: number;
@@ -27,6 +28,7 @@ export class ModifierGroup extends Entity<string> {
   private constructor(
     id: string,
     private readonly _name: string,
+    private readonly _nameEn: string | null,
     private readonly _min: number,
     private readonly _max: number,
     private readonly _position: number,
@@ -50,11 +52,15 @@ export class ModifierGroup extends Entity<string> {
       );
     }
 
-    return new ModifierGroup(id, name, min, max, position, [...options]);
+    return new ModifierGroup(id, name, props.nameEn ?? null, min, max, position, [...options]);
   }
 
   get name(): string {
     return this._name;
+  }
+
+  get nameEn(): string | null {
+    return this._nameEn;
   }
 
   get min(): number {
@@ -107,6 +113,7 @@ export class ModifierGroup extends Entity<string> {
     return new ModifierGroup(
       newGroupId,
       this._name,
+      this._nameEn,
       this._min,
       this._max,
       this._position,

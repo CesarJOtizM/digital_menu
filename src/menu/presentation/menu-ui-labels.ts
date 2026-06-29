@@ -1,3 +1,14 @@
+export interface ItemDetailLabels {
+  readonly unavailable: string;
+  readonly closeDetail: string;
+  readonly detailSheetAria: string;
+  /** Template with `{name}` — interpolate on the client via {@link formatLabel}. */
+  readonly viewDetailAria: string;
+  readonly variantsSection: string;
+  readonly modifiersSection: string;
+  readonly allergensSection: string;
+}
+
 export interface MenuUiLabels {
   readonly subtitle: string;
   readonly emptyTitle: string;
@@ -11,4 +22,5 @@ export interface MenuUiLabels {
   readonly listView: string;
   /** Label + accessible name for the image-forward card grid option. */
   readonly cardsView: string;
+  readonly itemDetail: ItemDetailLabels;
 }

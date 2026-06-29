@@ -3,7 +3,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { useTranslations } from "@/i18n";
+import { useTranslations, useUiLocale } from "@/i18n";
+import { adminActionCancelClass } from "../../_components/admin-action-styles";
+import { FormSubmitButton } from "../../_components/form-submit-button";
+import {
+  ContentLocaleField,
+  ContentLocaleTabs,
+  ContentLocaleSwitcher,
+} from "./content-locale-tabs";
+import { resolveAllergenDisplayIcon } from "@/menu/application/admin/allergen-icon";
+import type { AllergenOption } from "@/menu/application/admin/allergen-types";
+import { localizedName } from "@/menu/presentation/localize-menu-content";
 import { saveItemAction } from "../actions";
 import type {
   ItemFormValues,
@@ -11,10 +21,12 @@ import type {
   ModifierOptionFormValue,
   VariantFormValue,
 } from "@/menu/application/admin/item-form-types";
-import type { AllergenOption } from "@/menu/infrastructure/persistence/load-allergens";
+import type { UiLocale } from "@/i18n/config";
 
 interface ItemFormEditorProps {
-  categoryId: string;
+  categoryId?: string;
+  categoryName?: string;
+  categories?: readonly { id: string; name: string }[];
   itemId?: string;
   initial: ItemFormValues;
   allergens: AllergenOption[];
@@ -24,30 +36,34 @@ interface ItemFormEditorProps {
 }
 
 function createVariant(): VariantFormValue {
-  return { label: "", price: "" };
+  return { label: "", labelEn: "", price: "" };
 }
 
 function createOption(): ModifierOptionFormValue {
-  return { name: "", priceDelta: "0" };
+  return { name: "", nameEn: "", priceDelta: "0" };
 }
 
 function createModifierGroup(): ModifierGroupFormValue {
-  return { name: "", min: "0", max: "1", options: [createOption()] };
+  return { name: "", nameEn: "", min: "0", max: "1", options: [createOption()] };
 }
 
 export function ItemFormEditor({
   categoryId,
+  categoryName,
+  categories = [],
   itemId,
   initial,
   allergens,
   title,
-  returnTo = "/dashboard/menu",
+  returnTo = "/dashboard/menu/items",
   error,
 }: ItemFormEditorProps) {
   const t = useTranslations();
+  const uiLocale = useUiLocale();
   const [variants, setVariants] = useState(initial.variants);
   const [modifierGroups, setModifierGroups] = useState(initial.modifierGroups);
   const [removeImage, setRemoveImage] = useState(false);
+  const [contentLocale, setContentLocale] = useState<UiLocale>("es");
 
   const variantsJson = useMemo(() => JSON.stringify(variants), [variants]);
   const modifierGroupsJson = useMemo(
@@ -56,15 +72,8 @@ export function ItemFormEditor({
   );
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-10">
-      <Link
-        href="/dashboard/menu"
-        className="text-sm text-neutral-500 hover:text-neutral-800"
-      >
-        {t("dashboard.backToMenu")}
-      </Link>
-
-      <h1 className="mt-4 text-2xl font-medium">{title}</h1>
+    <div className="space-y-6">
+      <h1 className="text-2xl font-medium">{title}</h1>
 
       {error ? (
         <p
@@ -75,12 +84,10 @@ export function ItemFormEditor({
         </p>
       ) : null}
 
-      <form
-        action={saveItemAction}
-        encType="multipart/form-data"
-        className="mt-8 space-y-8"
-      >
-        <input type="hidden" name="categoryId" value={categoryId} />
+      <form action={saveItemAction} className="space-y-8">
+        {itemId && categoryId ? (
+          <input type="hidden" name="categoryId" value={categoryId} />
+        ) : null}
         {itemId ? <input type="hidden" name="itemId" value={itemId} /> : null}
         <input type="hidden" name="returnTo" value={returnTo} />
         <input type="hidden" name="variantsJson" value={variantsJson} readOnly />
@@ -94,31 +101,75 @@ export function ItemFormEditor({
         <section className="space-y-5 rounded-lg border border-neutral-200 bg-white p-5">
           <h2 className="text-lg font-medium">{t("itemForm.basics")}</h2>
 
-          <div className="space-y-1">
-            <label htmlFor="name" className="text-sm font-medium">
-              {t("itemForm.name")}
-            </label>
-            <input
-              id="name"
-              name="name"
-              required
-              defaultValue={initial.name}
-              className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
-            />
-          </div>
+          {itemId && categoryName ? (
+            <div className="space-y-1">
+              <p className="text-sm font-medium">{t("itemForm.category")}</p>
+              <p className="text-sm text-neutral-600">{categoryName}</p>
+            </div>
+          ) : (
+            <div className="space-y-1">
+              <label htmlFor="categoryId" className="text-sm font-medium">
+                {t("itemForm.category")}
+              </label>
+              <select
+                id="categoryId"
+                name="categoryId"
+                required
+                defaultValue={categoryId ?? ""}
+                className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+              >
+                <option value="" disabled>
+                  {t("itemForm.selectCategory")}
+                </option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
-          <div className="space-y-1">
-            <label htmlFor="description" className="text-sm font-medium">
-              {t("itemForm.description")}
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              rows={4}
-              defaultValue={initial.description}
-              className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
-            />
-          </div>
+          <ContentLocaleTabs
+            onLocaleChange={setContentLocale}
+            esPanel={
+              <div className="space-y-4">
+                <ContentLocaleField
+                  id="name"
+                  label={t("itemForm.name")}
+                  name="name"
+                  defaultValue={initial.name}
+                  required
+                />
+                <ContentLocaleField
+                  id="description"
+                  label={t("itemForm.description")}
+                  name="description"
+                  defaultValue={initial.description}
+                  multiline
+                />
+              </div>
+            }
+            enPanel={
+              <div className="space-y-4">
+                <ContentLocaleField
+                  id="nameEn"
+                  label={t("itemForm.name")}
+                  name="nameEn"
+                  defaultValue={initial.nameEn}
+                  hint={t("contentLocale.optionalHint")}
+                />
+                <ContentLocaleField
+                  id="descriptionEn"
+                  label={t("itemForm.description")}
+                  name="descriptionEn"
+                  defaultValue={initial.descriptionEn}
+                  multiline
+                  hint={t("contentLocale.optionalHint")}
+                />
+              </div>
+            }
+          />
 
           <div className="space-y-1">
             <label htmlFor="price" className="text-sm font-medium">
@@ -174,7 +225,11 @@ export function ItemFormEditor({
             </p>
           ) : (
             <div className="grid gap-2 sm:grid-cols-2">
-              {allergens.map((allergen) => (
+              {allergens.map((allergen) => {
+                const emoji = resolveAllergenDisplayIcon(allergen.icon);
+                const allergenName = localizedName(allergen, uiLocale);
+
+                return (
                 <label
                   key={allergen.id}
                   className="flex items-center gap-2 rounded-md border border-neutral-100 px-3 py-2 text-sm"
@@ -186,9 +241,20 @@ export function ItemFormEditor({
                     defaultChecked={initial.allergenIds.includes(allergen.id)}
                     className="rounded border-neutral-300"
                   />
-                  <span>{allergen.name}</span>
+                  {emoji ? (
+                    <span className="text-lg leading-none" aria-hidden>
+                      {emoji}
+                    </span>
+                  ) : null}
+                  <span className="flex-1">{allergenName}</span>
+                  {emoji ? (
+                    <span className="text-lg leading-none opacity-40" aria-hidden>
+                      {emoji}
+                    </span>
+                  ) : null}
                 </label>
-              ))}
+                );
+              })}
             </div>
           )}
         </section>
@@ -233,18 +299,21 @@ export function ItemFormEditor({
         </section>
 
         <section className="space-y-4 rounded-lg border border-neutral-200 bg-white p-5">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h2 className="text-lg font-medium">{t("itemForm.variants")}</h2>
               <p className="mt-1 text-sm text-neutral-500">{t("itemForm.variantsHint")}</p>
             </div>
-            <button
-              type="button"
-              onClick={() => setVariants((current) => [...current, createVariant()])}
-              className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm hover:bg-neutral-50"
-            >
-              {t("itemForm.addVariant")}
-            </button>
+            <div className="flex flex-wrap items-center gap-3">
+              <ContentLocaleSwitcher value={contentLocale} onChange={setContentLocale} />
+              <button
+                type="button"
+                onClick={() => setVariants((current) => [...current, createVariant()])}
+                className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm hover:bg-neutral-50"
+              >
+                {t("itemForm.addVariant")}
+              </button>
+            </div>
           </div>
 
           {variants.length === 0 ? (
@@ -257,17 +326,23 @@ export function ItemFormEditor({
                   className="grid gap-3 rounded-md border border-neutral-100 p-3 sm:grid-cols-[1fr_140px_auto]"
                 >
                   <input
-                    value={variant.label}
+                    value={contentLocale === "es" ? variant.label : (variant.labelEn ?? "")}
                     onChange={(event) =>
                       setVariants((current) =>
                         current.map((entry, entryIndex) =>
                           entryIndex === index
-                            ? { ...entry, label: event.target.value }
+                            ? contentLocale === "es"
+                              ? { ...entry, label: event.target.value }
+                              : { ...entry, labelEn: event.target.value }
                             : entry,
                         ),
                       )
                     }
-                    placeholder={t("itemForm.variantPlaceholder")}
+                    placeholder={
+                      contentLocale === "es"
+                        ? t("itemForm.variantPlaceholder")
+                        : t("itemForm.variantPlaceholderEn")
+                    }
                     className="rounded-md border border-neutral-300 px-3 py-2 text-sm"
                   />
                   <input
@@ -303,20 +378,23 @@ export function ItemFormEditor({
         </section>
 
         <section className="space-y-4 rounded-lg border border-neutral-200 bg-white p-5">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h2 className="text-lg font-medium">{t("itemForm.modifiers")}</h2>
               <p className="mt-1 text-sm text-neutral-500">{t("itemForm.modifiersHint")}</p>
             </div>
-            <button
-              type="button"
-              onClick={() =>
-                setModifierGroups((current) => [...current, createModifierGroup()])
-              }
-              className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm hover:bg-neutral-50"
-            >
-              {t("itemForm.addGroup")}
-            </button>
+            <div className="flex flex-wrap items-center gap-3">
+              <ContentLocaleSwitcher value={contentLocale} onChange={setContentLocale} />
+              <button
+                type="button"
+                onClick={() =>
+                  setModifierGroups((current) => [...current, createModifierGroup()])
+                }
+                className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm hover:bg-neutral-50"
+              >
+                {t("itemForm.addGroup")}
+              </button>
+            </div>
           </div>
 
           {modifierGroups.length === 0 ? (
@@ -330,17 +408,23 @@ export function ItemFormEditor({
                 >
                   <div className="grid gap-3 sm:grid-cols-[1fr_80px_80px_auto]">
                     <input
-                      value={group.name}
+                      value={contentLocale === "es" ? group.name : (group.nameEn ?? "")}
                       onChange={(event) =>
                         setModifierGroups((current) =>
                           current.map((entry, entryIndex) =>
                             entryIndex === groupIndex
-                              ? { ...entry, name: event.target.value }
+                              ? contentLocale === "es"
+                                ? { ...entry, name: event.target.value }
+                                : { ...entry, nameEn: event.target.value }
                               : entry,
                           ),
                         )
                       }
-                      placeholder={t("itemForm.groupNamePlaceholder")}
+                      placeholder={
+                        contentLocale === "es"
+                          ? t("itemForm.groupNamePlaceholder")
+                          : t("itemForm.groupNamePlaceholderEn")
+                      }
                       className="rounded-md border border-neutral-300 px-3 py-2 text-sm"
                     />
                     <input
@@ -393,7 +477,7 @@ export function ItemFormEditor({
                         className="grid gap-2 sm:grid-cols-[1fr_140px_auto]"
                       >
                         <input
-                          value={option.name}
+                          value={contentLocale === "es" ? option.name : (option.nameEn ?? "")}
                           onChange={(event) =>
                             setModifierGroups((current) =>
                               current.map((entry, entryIndex) =>
@@ -403,10 +487,15 @@ export function ItemFormEditor({
                                       options: entry.options.map(
                                         (optionEntry, optionEntryIndex) =>
                                           optionEntryIndex === optionIndex
-                                            ? {
-                                                ...optionEntry,
-                                                name: event.target.value,
-                                              }
+                                            ? contentLocale === "es"
+                                              ? {
+                                                  ...optionEntry,
+                                                  name: event.target.value,
+                                                }
+                                              : {
+                                                  ...optionEntry,
+                                                  nameEn: event.target.value,
+                                                }
                                             : optionEntry,
                                       ),
                                     }
@@ -414,7 +503,11 @@ export function ItemFormEditor({
                               ),
                             )
                           }
-                          placeholder={t("itemForm.optionPlaceholder")}
+                          placeholder={
+                            contentLocale === "es"
+                              ? t("itemForm.optionPlaceholder")
+                              : t("itemForm.optionPlaceholderEn")
+                          }
                           className="rounded-md border border-neutral-300 px-3 py-2 text-sm"
                         />
                         <input
@@ -493,20 +586,17 @@ export function ItemFormEditor({
         </section>
 
         <div className="flex flex-wrap gap-3">
-          <button
-            type="submit"
-            className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
-          >
+          <FormSubmitButton variant="primary">
             {t("itemForm.saveItem")}
-          </button>
+          </FormSubmitButton>
           <Link
-            href="/dashboard/menu"
-            className="rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium hover:bg-neutral-50"
+            href="/dashboard/menu/items"
+            className={adminActionCancelClass}
           >
             {t("common.cancel")}
           </Link>
         </div>
       </form>
-    </main>
+    </div>
   );
 }

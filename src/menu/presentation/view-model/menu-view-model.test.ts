@@ -27,8 +27,10 @@ function makeItem(overrides: Partial<Parameters<typeof Item.create>[0]> = {}): I
   return Item.create({
     id: overrides.id ?? "item-1",
     name: overrides.name ?? "Croquetas",
+    nameEn: overrides.nameEn ?? null,
     slug: overrides.slug ?? Slug.fromName(overrides.name ?? "Croquetas"),
     description: overrides.description ?? "Ask about daily special.",
+    descriptionEn: overrides.descriptionEn ?? null,
     basePrice: overrides.basePrice ?? Price.create(1500),
     imageSource: overrides.imageSource ?? ImageSource.placeholder(),
     active: overrides.active ?? true,
@@ -57,6 +59,7 @@ function makeCategory(
   return Category.create({
     id: overrides.id ?? "cat-1",
     name: overrides.name ?? "Appetizers",
+    nameEn: overrides.nameEn ?? null,
     slug: overrides.slug ?? Slug.fromName(overrides.name ?? "Appetizers"),
     position: overrides.position ?? 0,
     items,
@@ -302,6 +305,54 @@ describe("buildMenuViewModel", () => {
     });
 
     expect(vm.categories[0].items[0].allergens).toEqual(["Gluten", "Nuts"]);
+  });
+
+  it("uses English content overrides when locale is en", () => {
+    const menu = makeMenu([
+      makeCategory(
+        [
+          makeItem({
+            name: "Croquetas",
+            nameEn: "Croquettes",
+            description: "Clásicas",
+            descriptionEn: "Classic",
+          }),
+        ],
+        { name: "Entradas", nameEn: "Starters" },
+      ),
+    ]);
+
+    const vm = buildMenuViewModel(menu, {
+      resolver,
+      now: NOW,
+      timezone: TZ,
+      formatPrice: bareFormatter,
+      locale: "en",
+    });
+
+    expect(vm.categories[0].name).toBe("Starters");
+    expect(vm.categories[0].items[0].name).toBe("Croquettes");
+    expect(vm.categories[0].items[0].description).toBe("Classic");
+  });
+
+  it("falls back to default names when English translation is missing", () => {
+    const menu = makeMenu([
+      makeCategory([makeItem({ name: "Croquetas", nameEn: null })], {
+        name: "Entradas",
+        nameEn: null,
+      }),
+    ]);
+
+    const vm = buildMenuViewModel(menu, {
+      resolver,
+      now: NOW,
+      timezone: TZ,
+      formatPrice: bareFormatter,
+      locale: "en",
+    });
+
+    expect(vm.categories[0].name).toBe("Entradas");
+    expect(vm.categories[0].items[0].name).toBe("Croquetas");
   });
 
   it("falls back to an empty allergen list when no lookup is provided", () => {

@@ -24,6 +24,7 @@ export interface PrismaModifierOptionRow {
   id: string;
   groupId: string;
   name: string;
+  nameEn: string | null;
   priceDelta: number;
   sortOrder: number;
 }
@@ -32,6 +33,7 @@ export interface PrismaModifierGroupRow {
   id: string;
   itemId: string;
   name: string;
+  nameEn: string | null;
   min: number;
   max: number;
   sortOrder: number;
@@ -42,6 +44,7 @@ export interface PrismaVariantRow {
   id: string;
   itemId: string;
   label: string;
+  labelEn: string | null;
   price: number;
   sortOrder: number;
 }
@@ -49,8 +52,10 @@ export interface PrismaVariantRow {
 export interface PrismaItemRow {
   id: string;
   name: string;
+  nameEn: string | null;
   slug: string;
   description: string;
+  descriptionEn: string | null;
   basePrice: number;
   imageUrl: string | null;
   imagePath: string | null;
@@ -67,6 +72,7 @@ export interface PrismaItemRow {
 export interface PrismaCategoryRow {
   id: string;
   name: string;
+  nameEn: string | null;
   slug: string;
   sortOrder: number;
   description: string | null;
@@ -88,6 +94,7 @@ function optionToRow(option: PrismaModifierOptionRow): ModifierOptionRow {
   return {
     id: option.id,
     name: option.name,
+    nameEn: option.nameEn,
     priceDelta: option.priceDelta,
     sortOrder: option.sortOrder,
   };
@@ -97,6 +104,7 @@ function groupToRow(group: PrismaModifierGroupRow): ModifierGroupRow {
   return {
     id: group.id,
     name: group.name,
+    nameEn: group.nameEn,
     min: group.min,
     max: group.max,
     sortOrder: group.sortOrder,
@@ -108,6 +116,7 @@ function variantToRow(variant: PrismaVariantRow): VariantRow {
   return {
     id: variant.id,
     label: variant.label,
+    labelEn: variant.labelEn,
     price: variant.price,
     sortOrder: variant.sortOrder,
   };
@@ -117,8 +126,10 @@ function itemToRow(item: PrismaItemRow): ItemRow {
   return {
     id: item.id,
     name: item.name,
+    nameEn: item.nameEn,
     slug: item.slug,
     description: item.description,
+    descriptionEn: item.descriptionEn,
     basePrice: item.basePrice,
     imageUrl: item.imageUrl,
     imagePath: item.imagePath,
@@ -137,6 +148,7 @@ function categoryToRow(category: PrismaCategoryRow): CategoryRow {
   return {
     id: category.id,
     name: category.name,
+    nameEn: category.nameEn,
     slug: category.slug,
     sortOrder: category.sortOrder,
     description: category.description,

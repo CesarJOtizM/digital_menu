@@ -1,11 +1,19 @@
 import Link from "next/link";
 import { getTranslations } from "@/i18n/server";
 import { resolveAdminError, type TranslationParams } from "@/i18n";
+import { adminActionCancelClass } from "../../_components/admin-action-styles";
+import { FormSubmitButton } from "../../_components/form-submit-button";
 import { saveAllergenAction } from "../allergen-actions";
+import { AllergenEmojiPicker } from "./allergen-emoji-picker";
+import {
+  ContentLocaleField,
+  ContentLocaleTabs,
+} from "./content-locale-tabs";
 
 interface AllergenFormProps {
   allergenId?: string;
   initialName?: string;
+  initialNameEn?: string;
   initialIcon?: string;
   title: string;
   error?: string;
@@ -15,6 +23,7 @@ interface AllergenFormProps {
 export async function AllergenForm({
   allergenId,
   initialName = "",
+  initialNameEn = "",
   initialIcon = "",
   title,
   error,
@@ -24,15 +33,8 @@ export async function AllergenForm({
   const errorMessage = resolveAdminError(t, error, errorParams);
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-10">
-      <Link
-        href="/dashboard/menu/allergens"
-        className="text-sm text-neutral-500 hover:text-neutral-800"
-      >
-        {t("allergens.backToList")}
-      </Link>
-
-      <h1 className="mt-4 text-2xl font-medium">{title}</h1>
+    <div className="space-y-6">
+      <h1 className="text-2xl font-medium">{title}</h1>
 
       {errorMessage ? (
         <p
@@ -45,54 +47,56 @@ export async function AllergenForm({
 
       <form
         action={saveAllergenAction}
-        className="mt-8 space-y-5 rounded-lg border border-neutral-200 bg-white p-5"
+        className="space-y-5 rounded-lg border border-neutral-200 bg-white p-5"
       >
         {allergenId ? (
           <input type="hidden" name="allergenId" value={allergenId} />
         ) : null}
+        <input type="hidden" name="returnTo" value="/dashboard/menu/allergens" />
 
-        <div className="space-y-1">
-          <label htmlFor="name" className="text-sm font-medium">
-            {t("allergens.name")}
-          </label>
-          <input
-            id="name"
-            name="name"
-            required
-            defaultValue={initialName}
-            className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
-          />
-        </div>
+        <ContentLocaleTabs
+          esPanel={
+            <ContentLocaleField
+              id="name"
+              label={t("allergens.name")}
+              name="name"
+              defaultValue={initialName}
+              required
+            />
+          }
+          enPanel={
+            <ContentLocaleField
+              id="nameEn"
+              label={t("allergens.name")}
+              name="nameEn"
+              defaultValue={initialNameEn}
+              hint={t("contentLocale.optionalHint")}
+            />
+          }
+        />
 
-        <div className="space-y-1">
-          <label htmlFor="icon" className="text-sm font-medium">
-            {t("allergens.icon")}
-          </label>
-          <input
-            id="icon"
-            name="icon"
-            defaultValue={initialIcon}
-            placeholder={t("allergens.iconPlaceholder")}
-            className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
-          />
-          <p className="text-xs text-neutral-500">{t("allergens.iconHint")}</p>
+        <div className="space-y-2">
+          <p className="text-sm font-medium">
+            {t("allergens.emoji")}{" "}
+            <span className="font-normal text-neutral-500">
+              ({t("allergens.emojiOptional")})
+            </span>
+          </p>
+          <AllergenEmojiPicker initialIcon={initialIcon} />
         </div>
 
         <div className="flex flex-wrap gap-3 pt-2">
-          <button
-            type="submit"
-            className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
-          >
+          <FormSubmitButton variant="primary">
             {t("allergens.save")}
-          </button>
+          </FormSubmitButton>
           <Link
             href="/dashboard/menu/allergens"
-            className="rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium hover:bg-neutral-50"
+            className={adminActionCancelClass}
           >
             {t("common.cancel")}
           </Link>
         </div>
       </form>
-    </main>
+    </div>
   );
 }

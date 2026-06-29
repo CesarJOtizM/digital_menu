@@ -90,7 +90,7 @@ export default async function DashboardPage() {
         <h2 className="text-lg font-medium">{t("dashboard.quickLinks")}</h2>
         <div className="mt-4 flex flex-wrap gap-3">
           <Link
-            href="/dashboard/menu"
+            href="/dashboard/menu/order"
             className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-800"
           >
             {t("dashboard.manageMenu")}

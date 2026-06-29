@@ -1,10 +1,13 @@
 import Image from "next/image";
+import { formatLabel } from "@/i18n/translate";
 import { cn } from "@/lib/cn";
 import type { ItemView } from "../view-model/menu-view-model";
 
 interface ItemRowProps {
   readonly item: ItemView;
   readonly unavailableLabel: string;
+  readonly onSelect?: (item: ItemView) => void;
+  readonly viewDetailAria?: string;
 }
 
 /**
@@ -15,11 +18,28 @@ interface ItemRowProps {
  *
  * Out-of-window items are SHOWN MARKED unavailable (dimmed + badge), never hidden.
  */
-export function ItemRow({ item, unavailableLabel }: ItemRowProps) {
+export function ItemRow({
+  item,
+  unavailableLabel,
+  onSelect,
+  viewDetailAria,
+}: ItemRowProps) {
+  const interactive = Boolean(onSelect);
+  const Wrapper = interactive ? "button" : "article";
+
   return (
-    <article
+    <Wrapper
+      type={interactive ? "button" : undefined}
+      onClick={interactive ? () => onSelect?.(item) : undefined}
+      aria-label={
+        interactive && viewDetailAria
+          ? formatLabel(viewDetailAria, { name: item.name })
+          : undefined
+      }
       className={cn(
-        "flex items-start gap-4 py-3",
+        "flex w-full items-start gap-4 py-3 text-left",
+        interactive &&
+          "cursor-pointer rounded-sm transition-colors hover:bg-stone-100/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-400",
         item.unavailable && "opacity-55",
       )}
     >
@@ -102,6 +122,6 @@ export function ItemRow({ item, unavailableLabel }: ItemRowProps) {
           </p>
         ) : null}
       </div>
-    </article>
+    </Wrapper>
   );
 }

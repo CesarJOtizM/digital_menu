@@ -3,6 +3,7 @@ import { Entity, Price } from "@/shared/domain";
 export interface VariantProps {
   id: string;
   label: string;
+  labelEn?: string | null;
   price: Price;
   position: number;
 }
@@ -15,6 +16,7 @@ export class Variant extends Entity<string> {
   private constructor(
     id: string,
     private readonly _label: string,
+    private readonly _labelEn: string | null,
     private readonly _price: Price,
     private readonly _position: number,
   ) {
@@ -22,11 +24,15 @@ export class Variant extends Entity<string> {
   }
 
   static create(props: VariantProps): Variant {
-    return new Variant(props.id, props.label, props.price, props.position);
+    return new Variant(props.id, props.label, props.labelEn ?? null, props.price, props.position);
   }
 
   get label(): string {
     return this._label;
+  }
+
+  get labelEn(): string | null {
+    return this._labelEn;
   }
 
   get price(): Price {
@@ -39,6 +45,6 @@ export class Variant extends Entity<string> {
 
   /** Deep-clone into a fresh identity (Price is immutable, safe to share). */
   cloneWithId(newId: string): Variant {
-    return new Variant(newId, this._label, this._price, this._position);
+    return new Variant(newId, this._label, this._labelEn, this._price, this._position);
   }
 }

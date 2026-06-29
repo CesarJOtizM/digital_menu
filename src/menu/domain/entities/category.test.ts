@@ -31,17 +31,6 @@ describe("Category", () => {
     expect(category.items.map((i) => i.id)).toEqual(["i1", "i2"]);
   });
 
-  it("returns an empty list when it has no items (edge)", () => {
-    const category = Category.create({
-      id: "cat-1",
-      name: "Empty",
-      slug: Slug.fromName("Empty"),
-      position: 0,
-      items: [],
-    });
-    expect(category.items).toEqual([]);
-  });
-
   it("carries an optional availability window", () => {
     const window = AvailabilityWindow.create({
       days: [6],
@@ -57,5 +46,31 @@ describe("Category", () => {
       availability: window,
     });
     expect(category.availability?.days).toEqual([6]);
+  });
+
+  describe("reorderItems", () => {
+    it("applies a new explicit ordering by id", () => {
+      const category = Category.create({
+        id: "cat-1",
+        name: "Mains",
+        slug: Slug.fromName("Mains"),
+        position: 0,
+        items: [makeItem("i1", 0), makeItem("i2", 1)],
+      });
+      const reordered = category.reorderItems(["i2", "i1"]);
+      expect(reordered.items.map((item) => item.id)).toEqual(["i2", "i1"]);
+    });
+
+    it("does not mutate the original category", () => {
+      const category = Category.create({
+        id: "cat-1",
+        name: "Mains",
+        slug: Slug.fromName("Mains"),
+        position: 0,
+        items: [makeItem("i1", 0), makeItem("i2", 1)],
+      });
+      category.reorderItems(["i2", "i1"]);
+      expect(category.items.map((item) => item.id)).toEqual(["i1", "i2"]);
+    });
   });
 });

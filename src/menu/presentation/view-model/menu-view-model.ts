@@ -1,5 +1,7 @@
 import { IMAGE_SOURCE_TYPE } from "@/shared/domain";
 import type { PriceFormatter } from "@/shared/domain";
+import type { UiLocale } from "@/i18n/config";
+import { resolveLocalizedText } from "@/i18n/resolve-localized-text";
 import type {
   AvailabilityResolver,
   Category,
@@ -76,6 +78,8 @@ export interface BuildMenuViewModelDeps {
   readonly timezone: string;
   /** Centavos -> display string (bare number or symbol, per config). */
   readonly formatPrice: PriceFormatter;
+  /** UI locale for menu content (defaults to Spanish). */
+  readonly locale?: UiLocale;
   /** Optional allergen id -> display name lookup. */
   readonly allergenNames?: Readonly<Record<string, string>>;
 }
@@ -84,9 +88,13 @@ function isRealImage(item: Item): boolean {
   return item.imageSource.type !== IMAGE_SOURCE_TYPE.PLACEHOLDER;
 }
 
-function toVariantView(variant: Variant, formatPrice: PriceFormatter): VariantView {
+function toVariantView(
+  variant: Variant,
+  formatPrice: PriceFormatter,
+  locale: UiLocale,
+): VariantView {
   return {
-    label: variant.label,
+    label: resolveLocalizedText(variant.label, variant.labelEn, locale),
     priceDisplay: variant.price.toDisplay(formatPrice),
   };
 }
@@ -94,11 +102,12 @@ function toVariantView(variant: Variant, formatPrice: PriceFormatter): VariantVi
 function toModifierGroupView(
   group: ModifierGroup,
   formatPrice: PriceFormatter,
+  locale: UiLocale,
 ): ModifierGroupView {
   return {
-    name: group.name,
+    name: resolveLocalizedText(group.name, group.nameEn, locale),
     options: group.options.map((option) => ({
-      name: option.name,
+      name: resolveLocalizedText(option.name, option.nameEn, locale),
       priceDeltaDisplay:
         option.priceDelta.value === 0
           ? null
@@ -124,7 +133,7 @@ function toItemView(
   categoryAvailable: boolean,
   deps: BuildMenuViewModelDeps,
 ): ItemView {
-  const { resolver, now, timezone, formatPrice, allergenNames } = deps;
+  const { resolver, now, timezone, formatPrice, allergenNames, locale = "es" } = deps;
   const itemAvailable = resolver.isAvailable(item.availability, now, timezone);
   // Category window gates its items: an item is available only when BOTH the
   // category window and the item window include `now`. Unavailable items are
@@ -134,21 +143,22 @@ function toItemView(
 
   return {
     id: item.id,
-    name: item.name,
-    description: item.description,
+    name: resolveLocalizedText(item.name, item.nameEn, locale),
+    description: resolveLocalizedText(item.description, item.descriptionEn, locale),
     priceDisplay: item.basePrice.toDisplay(formatPrice),
     imageUrl: hasImage ? item.imageSource.url : null,
     hasImage,
     unavailable,
-    variants: item.variants.map((variant) => toVariantView(variant, formatPrice)),
+    variants: item.variants.map((variant) => toVariantView(variant, formatPrice, locale)),
     modifierGroups: item.modifierGroups.map((group) =>
-      toModifierGroupView(group, formatPrice),
+      toModifierGroupView(group, formatPrice, locale),
     ),
     allergens: resolveAllergens(item, allergenNames),
   };
 }
 
 function toCategoryView(category: Category, deps: BuildMenuViewModelDeps): CategoryView {
+  const locale = deps.locale ?? "es";
   const categoryAvailable = deps.resolver.isAvailable(
     category.availability,
     deps.now,
@@ -156,7 +166,7 @@ function toCategoryView(category: Category, deps: BuildMenuViewModelDeps): Categ
   );
   return {
     id: category.id,
-    name: category.name,
+    name: resolveLocalizedText(category.name, category.nameEn, locale),
     items: category.items
       .filter((item) => item.active)
       .map((item) => toItemView(item, categoryAvailable, deps)),

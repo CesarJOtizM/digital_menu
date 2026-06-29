@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { formatLabel } from "@/i18n/translate";
 import { cn } from "@/lib/cn";
 import type { ItemView } from "../view-model/menu-view-model";
 
@@ -7,6 +8,8 @@ const PLACEHOLDER_IMAGE = "/uploads/items/placeholder.svg";
 interface ItemCardProps {
   readonly item: ItemView;
   readonly unavailableLabel: string;
+  readonly onSelect?: (item: ItemView) => void;
+  readonly viewDetailAria?: string;
 }
 
 /**
@@ -19,13 +22,30 @@ interface ItemCardProps {
  * grid visually consistent by falling back to the local placeholder graphic.
  * Out-of-window items are SHOWN MARKED unavailable (dimmed + badge), never hidden.
  */
-export function ItemCard({ item, unavailableLabel }: ItemCardProps) {
+export function ItemCard({
+  item,
+  unavailableLabel,
+  onSelect,
+  viewDetailAria,
+}: ItemCardProps) {
   const imageSrc = item.hasImage && item.imageUrl ? item.imageUrl : PLACEHOLDER_IMAGE;
+  const interactive = Boolean(onSelect);
+  const Wrapper = interactive ? "button" : "article";
 
   return (
-    <article
+    <Wrapper
+      type={interactive ? "button" : undefined}
+      onClick={interactive ? () => onSelect?.(item) : undefined}
+      aria-label={
+        interactive && viewDetailAria
+          ? formatLabel(viewDetailAria, { name: item.name })
+          : undefined
+      }
       className={cn(
-        "flex flex-col overflow-hidden rounded-sm border border-stone-300 bg-stone-50/80 shadow-sm transition-shadow hover:shadow-md",
+        "flex flex-col overflow-hidden rounded-sm border border-stone-300 bg-stone-50/80 text-left shadow-sm transition-shadow",
+        interactive
+          ? "cursor-pointer hover:border-stone-400 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-400"
+          : "hover:shadow-md",
         item.unavailable && "opacity-55",
       )}
     >
@@ -108,6 +128,6 @@ export function ItemCard({ item, unavailableLabel }: ItemCardProps) {
           </p>
         ) : null}
       </div>
-    </article>
+    </Wrapper>
   );
 }

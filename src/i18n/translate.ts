@@ -47,6 +47,14 @@ export function createTranslator(messages: Messages): Translator {
   };
 }
 
+/** Interpolate `{param}` placeholders in a label template (safe for RSC → client props). */
+export function formatLabel(
+  template: string,
+  params: TranslationParams,
+): string {
+  return interpolate(template, params);
+}
+
 /** Plural helper for simple one/other pairs used in the dashboard. */
 export function pluralize(
   count: number,

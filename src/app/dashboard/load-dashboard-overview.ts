@@ -1,3 +1,6 @@
+import type { UiLocale } from "@/i18n/config";
+import { getUiLocale } from "@/i18n/get-locale";
+import { localizedName } from "@/menu/presentation/localize-menu-content";
 import type { Menu } from "@/menu/domain";
 import { PrismaMenuRepository } from "@/menu/infrastructure/persistence";
 import { getConfig } from "@/config/infrastructure";
@@ -20,9 +23,9 @@ export interface DashboardOverview {
   } | null;
 }
 
-function summarizeMenu(menu: Menu): DashboardOverview["menu"] {
+function summarizeMenu(menu: Menu, locale: UiLocale): DashboardOverview["menu"] {
   const categories = menu.categories.map((category) => ({
-    name: category.name,
+    name: localizedName(category, locale),
     itemCount: category.items.length,
   }));
 
@@ -50,11 +53,15 @@ async function loadPublishedMenu(): Promise<Menu | null> {
 }
 
 export async function loadDashboardOverview(): Promise<DashboardOverview> {
-  const [config, menu] = await Promise.all([getConfig(), loadPublishedMenu()]);
+  const [config, menu, locale] = await Promise.all([
+    getConfig(),
+    loadPublishedMenu(),
+    getUiLocale(),
+  ]);
 
   return {
     restaurantName: config.restaurantName,
     landingEnabled: config.landingEnabled,
-    menu: menu ? summarizeMenu(menu) : null,
+    menu: menu ? summarizeMenu(menu, locale) : null,
   };
 }

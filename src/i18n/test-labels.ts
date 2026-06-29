@@ -34,6 +34,15 @@ export const testMenuUiLabels: MenuUiLabels = {
   viewToggleAria: t("menu.viewToggleAria"),
   listView: t("menu.listView"),
   cardsView: t("menu.cardsView"),
+  itemDetail: {
+    unavailable: t("menu.unavailable"),
+    closeDetail: t("menu.closeDetail"),
+    detailSheetAria: t("menu.detailSheetAria"),
+    viewDetailAria: t("menu.viewDetailAria"),
+    variantsSection: t("menu.variantsSection"),
+    modifiersSection: t("menu.modifiersSection"),
+    allergensSection: t("menu.allergensSection"),
+  },
 };
 
 export const testUnavailableLabel = t("menu.unavailable");

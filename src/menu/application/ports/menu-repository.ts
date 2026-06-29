@@ -1,3 +1,5 @@
+import type { Category } from "../../domain/entities/category";
+import type { Item } from "../../domain/entities/item";
 import type { Menu } from "../../domain/entities/menu";
 
 /**
@@ -16,4 +18,18 @@ export interface MenuRepository {
   findForAdmin(): Promise<Menu | null>;
   /** Persist the whole aggregate atomically (upsert). */
   save(menu: Menu): Promise<void>;
+  /** Update category display order without rewriting item subtrees. */
+  updateCategoryOrder(menuId: string, orderedCategoryIds: readonly string[]): Promise<void>;
+  /** Update item display order within a category. */
+  updateItemOrder(categoryId: string, orderedItemIds: readonly string[]): Promise<void>;
+  /** Toggle item visibility without rewriting the item subtree. */
+  updateItemActive(categoryId: string, itemId: string, active: boolean): Promise<void>;
+  /** Upsert a single category row without touching its items. */
+  upsertCategory(menuId: string, category: Category): Promise<void>;
+  /** Delete a category and cascade its items. */
+  deleteCategoryById(categoryId: string): Promise<void>;
+  /** Persist one item subtree within a category. */
+  saveItem(categoryId: string, item: Item): Promise<void>;
+  /** Delete one item and cascade its children. */
+  deleteItemById(itemId: string): Promise<void>;
 }

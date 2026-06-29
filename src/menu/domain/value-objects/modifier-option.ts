@@ -3,6 +3,7 @@ import { Price } from "@/shared/domain";
 export interface ModifierOptionProps {
   id: string;
   name: string;
+  nameEn?: string | null;
   priceDelta?: Price;
 }
 
@@ -15,6 +16,7 @@ export class ModifierOption {
   private constructor(
     private readonly _id: string,
     private readonly _name: string,
+    private readonly _nameEn: string | null,
     private readonly _priceDelta: Price,
   ) {}
 
@@ -22,6 +24,7 @@ export class ModifierOption {
     return new ModifierOption(
       props.id,
       props.name,
+      props.nameEn ?? null,
       props.priceDelta ?? Price.create(0),
     );
   }
@@ -34,12 +37,16 @@ export class ModifierOption {
     return this._name;
   }
 
+  get nameEn(): string | null {
+    return this._nameEn;
+  }
+
   get priceDelta(): Price {
     return this._priceDelta;
   }
 
   /** Duplicate this option with a brand-new id (Price is immutable). */
   cloneWithId(newId: string): ModifierOption {
-    return new ModifierOption(newId, this._name, this._priceDelta);
+    return new ModifierOption(newId, this._name, this._nameEn, this._priceDelta);
   }
 }

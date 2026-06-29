@@ -5,10 +5,11 @@ import { redirect } from "next/navigation";
 import { AllergenAdminService } from "@/menu/application/admin/allergen-admin-service";
 import { MenuAdminError } from "@/menu/application/admin/menu-admin-service";
 import { requireAuthUser } from "@/shared/infrastructure/auth/require-auth-user";
+import { normalizeOptionalTranslation } from "@/i18n/resolve-localized-text";
 
 function revalidateAllergenPages(): void {
+  revalidatePath("/dashboard/menu");
   revalidatePath("/dashboard/menu/allergens");
-  revalidatePath("/dashboard/menu", "layout");
   revalidatePath("/menu");
   revalidatePath("/");
 }
@@ -43,11 +44,11 @@ export async function saveAllergenAction(formData: FormData) {
   try {
     await new AllergenAdminService().save(allergenId, {
       name: String(formData.get("name") ?? ""),
+      nameEn: normalizeOptionalTranslation(String(formData.get("nameEn") ?? "")),
       icon: iconRaw.length > 0 ? iconRaw : null,
     });
 
     revalidateAllergenPages();
-    redirect(returnTo);
   } catch (error) {
     redirectWithAdminError(
       allergenId
@@ -57,6 +58,8 @@ export async function saveAllergenAction(formData: FormData) {
       "SAVE_ALLERGEN_FAILED",
     );
   }
+
+  redirect(returnTo);
 }
 
 export async function deleteAllergenAction(formData: FormData) {
@@ -68,11 +71,7 @@ export async function deleteAllergenAction(formData: FormData) {
     await new AllergenAdminService().delete(allergenId);
     revalidateAllergenPages();
   } catch (error) {
-    redirectWithAdminError(
-      "/dashboard/menu/allergens",
-      error,
-      "DELETE_ALLERGEN_FAILED",
-    );
+    redirectWithAdminError("/dashboard/menu/allergens", error, "DELETE_ALLERGEN_FAILED");
   }
 
   redirect("/dashboard/menu/allergens");

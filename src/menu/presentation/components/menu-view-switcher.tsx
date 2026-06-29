@@ -1,16 +1,17 @@
 "use client";
 
-import { useCallback, useSyncExternalStore } from "react";
+import { useCallback, useState, useSyncExternalStore } from "react";
 import { cn } from "@/lib/cn";
 import { CardGrid } from "./card-grid";
 import { CategorySection } from "./category-section";
+import { ItemDetailSheet } from "./item-detail-sheet";
 import type { MenuUiLabels } from "../menu-ui-labels";
 import {
   DEFAULT_MENU_VIEW_MODE,
   normalizeMenuViewMode,
   type MenuViewMode,
 } from "../view-model/menu-view-mode";
-import type { CategoryView } from "../view-model/menu-view-model";
+import type { CategoryView, ItemView } from "../view-model/menu-view-model";
 
 const STORAGE_KEY = "menu:view-mode";
 
@@ -105,6 +106,8 @@ function ViewToggle({ mode, onSelect, labels }: ViewToggleProps) {
  * switch when the visitor previously chose cards.
  */
 export function MenuViewSwitcher({ categories, labels }: MenuViewSwitcherProps) {
+  const [selectedItem, setSelectedItem] = useState<ItemView | null>(null);
+
   const mode = useSyncExternalStore(
     viewModeStore.subscribe,
     viewModeStore.getSnapshot,
@@ -115,6 +118,16 @@ export function MenuViewSwitcher({ categories, labels }: MenuViewSwitcherProps) 
     viewModeStore.set(next);
   }, []);
 
+  const handleItemSelect = useCallback((item: ItemView) => {
+    setSelectedItem(item);
+  }, []);
+
+  const handleCloseDetail = useCallback(() => {
+    setSelectedItem(null);
+  }, []);
+
+  const viewDetailAria = labels.itemDetail.viewDetailAria;
+
   return (
     <div>
       <div className="mt-6 flex justify-center">
@@ -123,7 +136,12 @@ export function MenuViewSwitcher({ categories, labels }: MenuViewSwitcherProps) 
 
       <div className="mt-6">
         {mode === "cards" ? (
-          <CardGrid categories={categories} unavailableLabel={labels.unavailable} />
+          <CardGrid
+            categories={categories}
+            unavailableLabel={labels.unavailable}
+            onItemSelect={handleItemSelect}
+            viewDetailAria={viewDetailAria}
+          />
         ) : (
           <div>
             {categories.map((category) => (
@@ -131,11 +149,19 @@ export function MenuViewSwitcher({ categories, labels }: MenuViewSwitcherProps) 
                 key={category.id}
                 category={category}
                 unavailableLabel={labels.unavailable}
+                onItemSelect={handleItemSelect}
+                viewDetailAria={viewDetailAria}
               />
             ))}
           </div>
         )}
       </div>
+
+      <ItemDetailSheet
+        item={selectedItem}
+        labels={labels.itemDetail}
+        onClose={handleCloseDetail}
+      />
     </div>
   );
 }

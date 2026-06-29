@@ -1,6 +1,7 @@
 import { ModifierGroup, ModifierOption, Variant } from "@/menu/domain";
 import type { IdGenerator } from "@/menu/application/ports/id-generator";
 import { Price } from "@/shared/domain";
+import { normalizeOptionalTranslation } from "@/i18n/resolve-localized-text";
 import { MenuAdminError } from "./menu-admin-service";
 import { parsePriceInputToCentavos } from "./parse-price-input";
 import type {
@@ -36,6 +37,7 @@ export function parseVariantsFromJson(
       Variant.create({
         id: value.id?.trim() || ids.next(),
         label: value.label.trim(),
+        labelEn: normalizeOptionalTranslation(value.labelEn),
         price: Price.create(parsePriceInputToCentavos(value.price)),
         position: index,
       }),
@@ -52,6 +54,7 @@ function parseModifierOptions(
       ModifierOption.create({
         id: option.id?.trim() || ids.next(),
         name: option.name.trim(),
+        nameEn: normalizeOptionalTranslation(option.nameEn),
         priceDelta: Price.create(parsePriceInputToCentavos(option.priceDelta || "0")),
       }),
     );
@@ -85,6 +88,7 @@ export function parseModifierGroupsFromJson(
         return ModifierGroup.create({
           id: group.id?.trim() || ids.next(),
           name: groupName,
+          nameEn: normalizeOptionalTranslation(group.nameEn),
           min,
           max,
           position: index,

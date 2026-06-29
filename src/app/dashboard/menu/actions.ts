@@ -16,6 +16,11 @@ import { CuidIdGenerator, PrismaMenuRepository } from "@/menu/infrastructure/per
 import { createImageStorage } from "@/shared/infrastructure/storage/create-image-storage";
 import { prisma } from "@/shared/infrastructure/prisma/client";
 import { requireAuthUser } from "@/shared/infrastructure/auth/require-auth-user";
+import { normalizeOptionalTranslation } from "@/i18n/resolve-localized-text";
+
+const MENU_ORDER_PATH = "/dashboard/menu/order";
+const MENU_ITEMS_PATH = "/dashboard/menu/items";
+const MENU_CATEGORIES_PATH = "/dashboard/menu/categories";
 
 function createMenuAdminService(): MenuAdminService {
   return new MenuAdminService(
@@ -28,6 +33,10 @@ function createMenuAdminService(): MenuAdminService {
 function revalidateMenuPages(): void {
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/menu", "layout");
+  revalidatePath(MENU_ORDER_PATH);
+  revalidatePath(MENU_ITEMS_PATH);
+  revalidatePath(MENU_CATEGORIES_PATH);
+  revalidatePath("/dashboard/menu/allergens");
   revalidatePath("/menu");
   revalidatePath("/");
 }
@@ -62,6 +71,11 @@ function readAllergenIds(formData: FormData): string[] {
     .filter((value) => value.length > 0);
 }
 
+function readReturnTo(formData: FormData, fallback: string): string {
+  const value = String(formData.get("returnTo") ?? "").trim();
+  return value.length > 0 ? value : fallback;
+}
+
 export async function toggleItemActiveAction(formData: FormData) {
   await requireAuthUser();
 
@@ -72,10 +86,80 @@ export async function toggleItemActiveAction(formData: FormData) {
     await createMenuAdminService().toggleItemActive(categoryId, itemId);
     revalidateMenuPages();
   } catch (error) {
-    redirectWithAdminError("/dashboard/menu", error, "UPDATE_ITEM_FAILED");
+    redirectWithAdminError(MENU_ITEMS_PATH, error, "UPDATE_ITEM_FAILED");
   }
 
-  redirect("/dashboard/menu");
+  redirect(MENU_ITEMS_PATH);
+}
+
+export async function moveCategoryAction(formData: FormData) {
+  await requireAuthUser();
+
+  const categoryId = String(formData.get("categoryId") ?? "");
+  const direction = String(formData.get("direction") ?? "") as "up" | "down";
+  const returnTo = readReturnTo(formData, MENU_ORDER_PATH);
+
+  try {
+    await createMenuAdminService().moveCategory(categoryId, direction);
+    revalidateMenuPages();
+  } catch (error) {
+    redirectWithAdminError(returnTo, error, "REORDER_CATEGORY_FAILED");
+  }
+
+  redirect(returnTo);
+}
+
+export async function moveItemAction(formData: FormData) {
+  await requireAuthUser();
+
+  const categoryId = String(formData.get("categoryId") ?? "");
+  const itemId = String(formData.get("itemId") ?? "");
+  const direction = String(formData.get("direction") ?? "") as "up" | "down";
+  const returnTo = readReturnTo(formData, MENU_ORDER_PATH);
+
+  try {
+    await createMenuAdminService().moveItem(categoryId, itemId, direction);
+    revalidateMenuPages();
+  } catch (error) {
+    redirectWithAdminError(returnTo, error, "REORDER_ITEM_FAILED");
+  }
+
+  redirect(returnTo);
+}
+
+export async function reorderCategoriesAction(
+  orderedIds: string[],
+): Promise<{ error?: string }> {
+  await requireAuthUser();
+
+  try {
+    await createMenuAdminService().reorderCategories(orderedIds);
+    revalidateMenuPages();
+    return {};
+  } catch (error) {
+    if (error instanceof MenuAdminError) {
+      return { error: error.code };
+    }
+    return { error: "REORDER_CATEGORY_FAILED" };
+  }
+}
+
+export async function reorderCategoryItemsAction(
+  categoryId: string,
+  orderedIds: string[],
+): Promise<{ error?: string }> {
+  await requireAuthUser();
+
+  try {
+    await createMenuAdminService().reorderCategoryItems(categoryId, orderedIds);
+    revalidateMenuPages();
+    return {};
+  } catch (error) {
+    if (error instanceof MenuAdminError) {
+      return { error: error.code };
+    }
+    return { error: "REORDER_ITEM_FAILED" };
+  }
 }
 
 export async function saveItemAction(formData: FormData) {
@@ -84,7 +168,7 @@ export async function saveItemAction(formData: FormData) {
   const categoryId = String(formData.get("categoryId") ?? "");
   const itemIdRaw = String(formData.get("itemId") ?? "").trim();
   const itemId = itemIdRaw.length > 0 ? itemIdRaw : null;
-  const returnTo = String(formData.get("returnTo") ?? "/dashboard/menu");
+  const returnTo = readReturnTo(formData, MENU_ITEMS_PATH);
   const service = createMenuAdminService();
   const ids = new CuidIdGenerator();
   const storage = createImageStorage();
@@ -111,7 +195,11 @@ export async function saveItemAction(formData: FormData) {
 
     await service.saveItem(categoryId, itemId, {
       name: String(formData.get("name") ?? ""),
+      nameEn: normalizeOptionalTranslation(String(formData.get("nameEn") ?? "")),
       description: String(formData.get("description") ?? ""),
+      descriptionEn: normalizeOptionalTranslation(
+        String(formData.get("descriptionEn") ?? ""),
+      ),
       priceCentavos,
       active: readCheckbox(formData, "active"),
       variants,
@@ -121,7 +209,6 @@ export async function saveItemAction(formData: FormData) {
     });
 
     revalidateMenuPages();
-    redirect(returnTo);
   } catch (error) {
     redirectWithAdminError(
       itemId
@@ -131,6 +218,8 @@ export async function saveItemAction(formData: FormData) {
       "SAVE_ITEM_FAILED",
     );
   }
+
+  redirect(returnTo);
 }
 
 export async function deleteItemAction(formData: FormData) {
@@ -143,10 +232,10 @@ export async function deleteItemAction(formData: FormData) {
     await createMenuAdminService().deleteItem(categoryId, itemId);
     revalidateMenuPages();
   } catch (error) {
-    redirectWithAdminError("/dashboard/menu", error, "DELETE_ITEM_FAILED");
+    redirectWithAdminError(MENU_ITEMS_PATH, error, "DELETE_ITEM_FAILED");
   }
 
-  redirect("/dashboard/menu");
+  redirect(MENU_ITEMS_PATH);
 }
 
 export async function saveCategoryAction(formData: FormData) {
@@ -154,15 +243,15 @@ export async function saveCategoryAction(formData: FormData) {
 
   const categoryIdRaw = String(formData.get("categoryId") ?? "").trim();
   const categoryId = categoryIdRaw.length > 0 ? categoryIdRaw : null;
-  const returnTo = String(formData.get("returnTo") ?? "/dashboard/menu");
+  const returnTo = readReturnTo(formData, MENU_CATEGORIES_PATH);
 
   try {
     await createMenuAdminService().saveCategory(categoryId, {
       name: String(formData.get("name") ?? ""),
+      nameEn: normalizeOptionalTranslation(String(formData.get("nameEn") ?? "")),
     });
 
     revalidateMenuPages();
-    redirect(returnTo);
   } catch (error) {
     redirectWithAdminError(
       categoryId
@@ -172,6 +261,8 @@ export async function saveCategoryAction(formData: FormData) {
       "SAVE_CATEGORY_FAILED",
     );
   }
+
+  redirect(returnTo);
 }
 
 export async function deleteCategoryAction(formData: FormData) {
@@ -183,8 +274,8 @@ export async function deleteCategoryAction(formData: FormData) {
     await createMenuAdminService().deleteCategory(categoryId);
     revalidateMenuPages();
   } catch (error) {
-    redirectWithAdminError("/dashboard/menu", error, "DELETE_CATEGORY_FAILED");
+    redirectWithAdminError(MENU_CATEGORIES_PATH, error, "DELETE_CATEGORY_FAILED");
   }
 
-  redirect("/dashboard/menu");
+  redirect(MENU_CATEGORIES_PATH);
 }

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getTranslations } from "@/i18n/server";
+import { localizedName } from "@/menu/presentation/localize-menu-content";
 import { extractAdminErrorParams } from "@/i18n/extract-admin-error-params";
 import { CategoryForm } from "../../_components/category-form";
 import { loadAdminMenu } from "../../load-admin-menu";
@@ -18,7 +19,7 @@ export default async function EditCategoryPage({
 }) {
   const { id } = await params;
   const query = await searchParams;
-  const [{ t }, menu] = await Promise.all([getTranslations(), loadAdminMenu()]);
+  const [{ t, locale }, menu] = await Promise.all([getTranslations(), loadAdminMenu()]);
   const category = menu?.findCategory(id);
 
   if (!category) {
@@ -29,7 +30,10 @@ export default async function EditCategoryPage({
     <CategoryForm
       categoryId={id}
       initialName={category.name}
-      title={t("dashboard.editCategoryNamed", { name: category.name })}
+      initialNameEn={category.nameEn ?? ""}
+      title={t("dashboard.editCategoryNamed", {
+        name: localizedName(category, locale),
+      })}
       error={query.error}
       errorParams={extractAdminErrorParams(query)}
     />

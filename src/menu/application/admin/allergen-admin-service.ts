@@ -5,9 +5,11 @@ import { CuidIdGenerator } from "@/menu/infrastructure/persistence";
 import type { IdGenerator } from "@/menu/application/ports/id-generator";
 import { prisma } from "@/shared/infrastructure/prisma/client";
 import { MenuAdminError } from "./menu-admin-service";
+import { normalizeAllergenIconForSave } from "./allergen-icon";
 
 export interface AllergenInput {
   name: string;
+  nameEn?: string | null;
   icon?: string | null;
 }
 
@@ -40,7 +42,8 @@ export class AllergenAdminService {
       throw new MenuAdminError("ALLERGEN_NAME_REQUIRED");
     }
 
-    const icon = input.icon?.trim() || null;
+    const nameEn = input.nameEn ?? null;
+    const icon = normalizeAllergenIconForSave(input.icon);
 
     if (allergenId) {
       const existing = await prisma.allergen.findUnique({
@@ -57,7 +60,7 @@ export class AllergenAdminService {
 
       await prisma.allergen.update({
         where: { id: allergenId },
-        data: { name, slug, icon },
+        data: { name, nameEn, slug, icon },
       });
       return allergenId;
     }
@@ -66,6 +69,7 @@ export class AllergenAdminService {
       data: {
         id: this.ids.next(),
         name,
+        nameEn,
         slug: await resolveUniqueSlug(name),
         icon,
       },

@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, within } from "@testing-library/react";
+import { formatLabel } from "@/i18n/translate";
 import { testMenuUiLabels } from "@/i18n/test-labels";
 import { MenuPage } from "./menu-page";
 import type { MenuViewModel } from "../view-model/menu-view-model";
@@ -86,6 +87,23 @@ describe("MenuPage", () => {
 
     expect(screen.getByText(/preparando la carta/i)).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Appetizers" })).not.toBeInTheDocument();
+  });
+
+  it("opens the detail sheet when an item is clicked", () => {
+    render(<MenuPage viewModel={makeViewModel()} labels={testMenuUiLabels} />);
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: formatLabel(testMenuUiLabels.itemDetail.viewDetailAria, {
+          name: "Croquetas",
+        }),
+      }),
+    );
+
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(
+      within(screen.getByRole("dialog")).getByRole("heading", { name: "Croquetas" }),
+    ).toBeInTheDocument();
   });
 
   it("never renders cart, checkout or order controls", () => {
