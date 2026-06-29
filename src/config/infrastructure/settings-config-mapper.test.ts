@@ -23,6 +23,7 @@ function fullRow(): SettingsRow {
     locale: "es-AR",
     timezone: "America/Argentina/Buenos_Aires",
     showCurrencySymbol: false,
+    defaultMenuViewMode: "list",
     landing: { enabled: true },
   };
 }
@@ -51,6 +52,16 @@ describe("mapSettingsRowToConfig", () => {
     it("maps the currency-symbol toggle (Azahar bare-number mode)", () => {
       const config = mapSettingsRowToConfig(fullRow());
       expect(config.showCurrencySymbol).toBe(false);
+    });
+
+    it("maps the default menu view mode", () => {
+      const config = mapSettingsRowToConfig(fullRow());
+      expect(config.defaultMenuViewMode).toBe("list");
+    });
+
+    it("normalizes an invalid stored menu view mode to list", () => {
+      const row: SettingsRow = { ...fullRow(), defaultMenuViewMode: "grid" };
+      expect(mapSettingsRowToConfig(row).defaultMenuViewMode).toBe("list");
     });
 
     it("reads landingEnabled from the landing JSON blob", () => {

@@ -11,6 +11,7 @@ const baseConfig: DeployConfig = {
   locale: "es-PR",
   timezone: "America/Puerto_Rico",
   showCurrencySymbol: false,
+  defaultMenuViewMode: "list",
   landingEnabled: true,
   landing: {
     hero: { description: "Tapas y cócteles en Condado." },

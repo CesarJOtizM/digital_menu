@@ -4,8 +4,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useTranslations, useUiLocale } from "@/i18n";
+import type { PriceInputFormatOptions } from "@/menu/application/admin/price-input-format";
 import { adminActionCancelClass } from "../../_components/admin-action-styles";
 import { FormSubmitButton } from "../../_components/form-submit-button";
+import { PriceInput } from "./price-input";
 import {
   ContentLocaleField,
   ContentLocaleTabs,
@@ -33,6 +35,7 @@ interface ItemFormEditorProps {
   title: string;
   returnTo?: string;
   error?: string;
+  priceFormat: PriceInputFormatOptions;
 }
 
 function createVariant(): VariantFormValue {
@@ -57,6 +60,7 @@ export function ItemFormEditor({
   title,
   returnTo = "/dashboard/menu/items",
   error,
+  priceFormat,
 }: ItemFormEditorProps) {
   const t = useTranslations();
   const uiLocale = useUiLocale();
@@ -175,14 +179,12 @@ export function ItemFormEditor({
             <label htmlFor="price" className="text-sm font-medium">
               {t("itemForm.basePrice")}
             </label>
-            <input
+            <PriceInput
               id="price"
               name="price"
               required
-              inputMode="decimal"
-              placeholder="12.50"
               defaultValue={initial.price}
-              className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+              priceFormat={priceFormat}
             />
             <p className="text-xs text-neutral-500">{t("itemForm.basePriceHint")}</p>
           </div>
@@ -345,20 +347,16 @@ export function ItemFormEditor({
                     }
                     className="rounded-md border border-neutral-300 px-3 py-2 text-sm"
                   />
-                  <input
+                  <PriceInput
                     value={variant.price}
-                    onChange={(event) =>
+                    onValueChange={(next) =>
                       setVariants((current) =>
                         current.map((entry, entryIndex) =>
-                          entryIndex === index
-                            ? { ...entry, price: event.target.value }
-                            : entry,
+                          entryIndex === index ? { ...entry, price: next } : entry,
                         ),
                       )
                     }
-                    placeholder={t("itemForm.pricePlaceholder")}
-                    inputMode="decimal"
-                    className="rounded-md border border-neutral-300 px-3 py-2 text-sm"
+                    priceFormat={priceFormat}
                   />
                   <button
                     type="button"
@@ -510,9 +508,9 @@ export function ItemFormEditor({
                           }
                           className="rounded-md border border-neutral-300 px-3 py-2 text-sm"
                         />
-                        <input
+                        <PriceInput
                           value={option.priceDelta}
-                          onChange={(event) =>
+                          onValueChange={(next) =>
                             setModifierGroups((current) =>
                               current.map((entry, entryIndex) =>
                                 entryIndex === groupIndex
@@ -521,10 +519,7 @@ export function ItemFormEditor({
                                       options: entry.options.map(
                                         (optionEntry, optionEntryIndex) =>
                                           optionEntryIndex === optionIndex
-                                            ? {
-                                                ...optionEntry,
-                                                priceDelta: event.target.value,
-                                              }
+                                            ? { ...optionEntry, priceDelta: next }
                                             : optionEntry,
                                       ),
                                     }
@@ -532,9 +527,8 @@ export function ItemFormEditor({
                               ),
                             )
                           }
-                          placeholder="+0.00"
-                          inputMode="decimal"
-                          className="rounded-md border border-neutral-300 px-3 py-2 text-sm"
+                          priceFormat={priceFormat}
+                          showPlusPrefix
                         />
                         <button
                           type="button"

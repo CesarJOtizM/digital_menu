@@ -14,7 +14,6 @@ import {
 } from "../landing-navigation";
 import type { LandingViewModel } from "../landing-view-model";
 import { getTranslations } from "@/i18n/server";
-import { LanguageSwitcher } from "@/i18n";
 
 interface LandingPageLabels {
   readonly nav: LandingNavLabels;
@@ -50,14 +49,11 @@ export function LandingPageContent({
   return (
     <div className="animate-menu-enter menu-surface min-h-screen">
       <LandingJsonLd viewModel={viewModel} siteUrl={siteUrl} />
-      {showLanguageSwitcher ? (
-        <div className="sticky top-0 z-50 border-b border-stone-200/80 bg-white/95 backdrop-blur-sm">
-          <div className="mx-auto flex max-w-5xl items-center justify-end px-6 py-2">
-            <LanguageSwitcher />
-          </div>
-        </div>
-      ) : null}
-      <LandingHeader navigation={navigation} mainNavAria={labels.mainNavAria} />
+      <LandingHeader
+        navigation={navigation}
+        mainNavAria={labels.mainNavAria}
+        showLanguageSwitcher={showLanguageSwitcher}
+      />
 
       <main>
         <LandingHero hero={viewModel.hero} />

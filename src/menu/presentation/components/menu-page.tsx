@@ -4,13 +4,15 @@ import { MenuViewSwitcher } from "./menu-view-switcher";
 import { ViewHomeLink } from "./view-home-link";
 import type { MenuUiLabels } from "../menu-ui-labels";
 import type { MenuViewModel } from "../view-model/menu-view-model";
+import type { MenuViewMode } from "../view-model/menu-view-mode";
 
 interface MenuPageProps {
   readonly viewModel: MenuViewModel;
   readonly labels: MenuUiLabels;
+  readonly defaultViewMode?: MenuViewMode;
 }
 
-export function MenuPage({ viewModel, labels }: MenuPageProps) {
+export function MenuPage({ viewModel, labels, defaultViewMode }: MenuPageProps) {
   const navCategories = viewModel.categories.map((category) => ({
     id: category.id,
     name: category.name,
@@ -48,6 +50,7 @@ export function MenuPage({ viewModel, labels }: MenuPageProps) {
           <MenuViewSwitcher
             categories={viewModel.categories}
             labels={labels}
+            defaultViewMode={defaultViewMode}
           />
         )}
       </div>

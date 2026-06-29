@@ -10,7 +10,6 @@ import {
   getDevBypassConfig,
   hasDevBypassCookieValue,
 } from "./dev-bypass";
-import { resolveSignIn } from "./resolve-sign-in";
 
 export const getAuthUser = cache(async (): Promise<User | null> => {
   const cookieStore = await cookies();
@@ -28,10 +27,5 @@ export const getAuthUser = cache(async (): Promise<User | null> => {
 
   if (!user) return null;
 
-  const allowed = resolveSignIn(
-    { email: user.email },
-    process.env.ALLOWED_EMAILS,
-  );
-
-  return allowed ? user : null;
+  return user;
 });

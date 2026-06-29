@@ -1,3 +1,5 @@
+import type { MenuViewMode } from "@/menu/presentation/view-model/menu-view-mode";
+
 /**
  * Per-deploy single-tenant configuration. Represents branding, money formatting,
  * and locale/timezone for ONE restaurant deploy. There is NO tenantId and no
@@ -20,6 +22,8 @@ export interface DeployConfig {
   readonly timezone: string;
   /** When false, prices render as bare numbers (Azahar-style). */
   readonly showCurrencySymbol: boolean;
+  /** Default public menu layout before a visitor chooses list or cards. */
+  readonly defaultMenuViewMode: MenuViewMode;
   /** When true, the root route renders a landing page instead of redirecting. */
   readonly landingEnabled: boolean;
   /**

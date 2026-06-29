@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useSyncExternalStore } from "react";
+import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
 import { cn } from "@/lib/cn";
 import { CardGrid } from "./card-grid";
 import { CategorySection } from "./category-section";
@@ -15,41 +15,39 @@ import type { CategoryView, ItemView } from "../view-model/menu-view-model";
 
 const STORAGE_KEY = "menu:view-mode";
 
-/**
- * A tiny localStorage-backed store for the chosen view mode. Reading it through
- * {@link useSyncExternalStore} keeps the switcher SSR-safe WITHOUT a
- * setState-in-effect: the server snapshot is always the brand default, the
- * client snapshot reads the persisted value, and writes notify subscribers so
- * the toggle re-renders. This avoids both hydration mismatch and cascading
- * effect renders.
- */
-const viewModeStore = {
-  subscribe(onChange: () => void): () => void {
-    if (typeof window === "undefined") {
-      return () => {};
-    }
-    window.addEventListener("storage", onChange);
-    window.addEventListener("menu:view-mode-change", onChange);
-    return () => {
-      window.removeEventListener("storage", onChange);
-      window.removeEventListener("menu:view-mode-change", onChange);
-    };
-  },
-  getSnapshot(): MenuViewMode {
-    return normalizeMenuViewMode(window.localStorage.getItem(STORAGE_KEY));
-  },
-  getServerSnapshot(): MenuViewMode {
-    return DEFAULT_MENU_VIEW_MODE;
-  },
-  set(mode: MenuViewMode): void {
-    window.localStorage.setItem(STORAGE_KEY, mode);
-    window.dispatchEvent(new Event("menu:view-mode-change"));
-  },
-};
+function createViewModeStore(defaultMode: MenuViewMode) {
+  return {
+    subscribe(onChange: () => void): () => void {
+      if (typeof window === "undefined") {
+        return () => {};
+      }
+      window.addEventListener("storage", onChange);
+      window.addEventListener("menu:view-mode-change", onChange);
+      return () => {
+        window.removeEventListener("storage", onChange);
+        window.removeEventListener("menu:view-mode-change", onChange);
+      };
+    },
+    getSnapshot(): MenuViewMode {
+      return normalizeMenuViewMode(
+        window.localStorage.getItem(STORAGE_KEY),
+        defaultMode,
+      );
+    },
+    getServerSnapshot(): MenuViewMode {
+      return defaultMode;
+    },
+    set(mode: MenuViewMode): void {
+      window.localStorage.setItem(STORAGE_KEY, mode);
+      window.dispatchEvent(new Event("menu:view-mode-change"));
+    },
+  };
+}
 
 interface MenuViewSwitcherProps {
   readonly categories: readonly CategoryView[];
   readonly labels: MenuUiLabels;
+  readonly defaultViewMode?: MenuViewMode;
 }
 
 interface ViewToggleProps {
@@ -105,8 +103,16 @@ function ViewToggle({ mode, onSelect, labels }: ViewToggleProps) {
  * mode — so there is no hydration mismatch, only a possible post-hydration
  * switch when the visitor previously chose cards.
  */
-export function MenuViewSwitcher({ categories, labels }: MenuViewSwitcherProps) {
+export function MenuViewSwitcher({
+  categories,
+  labels,
+  defaultViewMode = DEFAULT_MENU_VIEW_MODE,
+}: MenuViewSwitcherProps) {
   const [selectedItem, setSelectedItem] = useState<ItemView | null>(null);
+  const viewModeStore = useMemo(
+    () => createViewModeStore(defaultViewMode),
+    [defaultViewMode],
+  );
 
   const mode = useSyncExternalStore(
     viewModeStore.subscribe,
@@ -114,9 +120,12 @@ export function MenuViewSwitcher({ categories, labels }: MenuViewSwitcherProps) 
     viewModeStore.getServerSnapshot,
   );
 
-  const selectMode = useCallback((next: MenuViewMode) => {
-    viewModeStore.set(next);
-  }, []);
+  const selectMode = useCallback(
+    (next: MenuViewMode) => {
+      viewModeStore.set(next);
+    },
+    [viewModeStore],
+  );
 
   const handleItemSelect = useCallback((item: ItemView) => {
     setSelectedItem(item);

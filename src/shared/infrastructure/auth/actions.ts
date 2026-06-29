@@ -10,7 +10,6 @@ import {
   getDevBypassConfig,
   matchesDevBypassCredentials,
 } from "./dev-bypass";
-import { resolveSignIn } from "./resolve-sign-in";
 
 async function setDevBypassSession() {
   const cookieStore = await cookies();
@@ -20,34 +19,6 @@ async function setDevBypassSession() {
 async function clearDevBypassSession() {
   const cookieStore = await cookies();
   cookieStore.delete(DEV_BYPASS_COOKIE);
-}
-
-function getAuthRedirectOrigin(): string {
-  return process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
-}
-
-async function rejectUnauthorizedSignIn(email: string | undefined) {
-  const supabase = await createSupabaseServerClient();
-  await supabase.auth.signOut();
-  redirect(`/login?error=unauthorized&email=${encodeURIComponent(email ?? "")}`);
-}
-
-export async function signInWithGoogleAction() {
-  const supabase = await createSupabaseServerClient();
-  const origin = getAuthRedirectOrigin();
-
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: {
-      redirectTo: `${origin}/auth/callback`,
-    },
-  });
-
-  if (error || !data.url) {
-    redirect("/login?error=oauth_start");
-  }
-
-  redirect(data.url);
 }
 
 export async function signInWithDevBypassAction() {
@@ -85,10 +56,6 @@ export async function signInWithPasswordAction(formData: FormData) {
 
   if (error || !data.user) {
     redirect("/login?error=invalid_credentials");
-  }
-
-  if (!resolveSignIn({ email: data.user.email }, process.env.ALLOWED_EMAILS)) {
-    await rejectUnauthorizedSignIn(data.user.email);
   }
 
   redirect("/dashboard");

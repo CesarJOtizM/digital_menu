@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { resolveSignIn } from "@/shared/infrastructure/auth/resolve-sign-in";
 import { createSupabaseServerClient } from "@/shared/infrastructure/supabase/server";
 
 export async function GET(request: Request) {
@@ -15,15 +14,6 @@ export async function GET(request: Request) {
 
   if (error) {
     return NextResponse.redirect(`${origin}/login?error=auth_callback`);
-  }
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!resolveSignIn({ email: user?.email }, process.env.ALLOWED_EMAILS)) {
-    await supabase.auth.signOut();
-    return NextResponse.redirect(`${origin}/login?error=unauthorized`);
   }
 
   return NextResponse.redirect(`${origin}/dashboard`);

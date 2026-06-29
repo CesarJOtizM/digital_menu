@@ -7,6 +7,7 @@ import { useTranslations } from "@/i18n";
 const LINKS = [
   { href: "/dashboard", key: "dashboard.navHome", exact: true },
   { href: "/dashboard/menu", key: "dashboard.navManagement", exact: false },
+  { href: "/dashboard/settings", key: "dashboard.navSettings", exact: true },
 ] as const;
 
 type DashboardNavProps = {

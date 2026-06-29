@@ -71,6 +71,7 @@ export async function MenuView() {
           homeLink,
         }}
         labels={labels}
+        defaultViewMode={config.defaultMenuViewMode}
       />
     );
   }
@@ -84,5 +85,11 @@ export async function MenuView() {
     allergenNames,
   });
 
-  return <MenuPage viewModel={{ ...viewModel, homeLink }} labels={labels} />;
+  return (
+    <MenuPage
+      viewModel={{ ...viewModel, homeLink }}
+      labels={labels}
+      defaultViewMode={config.defaultMenuViewMode}
+    />
+  );
 }

@@ -5,7 +5,6 @@ import {
   getAuthUser,
   isDevBypassAvailable,
   signInWithDevBypassAction,
-  signInWithGoogleAction,
   signInWithPasswordAction,
 } from "@/shared/infrastructure/auth";
 
@@ -65,22 +64,7 @@ export default async function LoginPage({
           </form>
         ) : null}
 
-        <form action={signInWithGoogleAction} className="mt-8">
-          <button
-            type="submit"
-            className="w-full rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium hover:bg-neutral-50"
-          >
-            {t("login.google")}
-          </button>
-        </form>
-
-        <div className="my-6 flex items-center gap-3">
-          <span className="h-px flex-1 bg-neutral-200" />
-          <span className="text-xs text-neutral-400">{t("login.divider")}</span>
-          <span className="h-px flex-1 bg-neutral-200" />
-        </div>
-
-        <form action={signInWithPasswordAction} className="space-y-4">
+        <form action={signInWithPasswordAction} className="mt-8 space-y-4">
           <div className="space-y-1 text-left">
             <label htmlFor="email" className="text-sm font-medium">
               {t("login.email")}

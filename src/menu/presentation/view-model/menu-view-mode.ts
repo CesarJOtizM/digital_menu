@@ -26,6 +26,9 @@ export function isMenuViewMode(value: unknown): value is MenuViewMode {
  * to the brand default. Pure — used by the client switcher when hydrating from
  * localStorage without risking a bad value reaching the render.
  */
-export function normalizeMenuViewMode(value: unknown): MenuViewMode {
-  return isMenuViewMode(value) ? value : DEFAULT_MENU_VIEW_MODE;
+export function normalizeMenuViewMode(
+  value: unknown,
+  fallback: MenuViewMode = DEFAULT_MENU_VIEW_MODE,
+): MenuViewMode {
+  return isMenuViewMode(value) ? value : fallback;
 }

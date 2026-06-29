@@ -2,7 +2,10 @@ import { randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import sharp from "sharp";
 import type { ImageStoragePort, StoredImage } from "@/shared/domain/ports";
-import { getSupabaseUrl } from "@/shared/infrastructure/supabase/env";
+import {
+  getSupabaseSecretKey,
+  getSupabaseUrl,
+} from "@/shared/infrastructure/supabase/env";
 
 const MIME_MAP: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -12,14 +15,6 @@ const MIME_MAP: Record<string, string> = {
 
 function mimeToExt(mimeType: string): string {
   return MIME_MAP[mimeType] ?? "jpg";
-}
-
-function getServiceRoleKey(): string {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!key) {
-    throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY for Supabase Storage");
-  }
-  return key;
 }
 
 function getBucketName(): string {
@@ -49,7 +44,7 @@ export class SupabaseImageStorage implements ImageStoragePort {
   private readonly bucket = getBucketName();
 
   private adminClient() {
-    return createClient(getSupabaseUrl(), getServiceRoleKey(), {
+    return createClient(getSupabaseUrl(), getSupabaseSecretKey(), {
       auth: { persistSession: false, autoRefreshToken: false },
     });
   }

@@ -11,6 +11,11 @@ describe("parsePriceInputToCentavos", () => {
     expect(parsePriceInputToCentavos("12,50")).toBe(1250);
   });
 
+  it("parses locale-masked currency strings", () => {
+    expect(parsePriceInputToCentavos("$1.234,56")).toBe(123456);
+    expect(parsePriceInputToCentavos("$1,234.56")).toBe(123456);
+  });
+
   it("rejects empty and invalid values", () => {
     expect(() => parsePriceInputToCentavos("")).toThrow(MenuAdminError);
     expect(() => parsePriceInputToCentavos("-1")).toThrow(MenuAdminError);

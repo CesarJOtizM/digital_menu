@@ -172,6 +172,8 @@ model Settings {
   locale             String
   timezone           String
   showCurrencySymbol Boolean  @default(true)
+  /// Default public menu layout when the visitor has no stored preference.
+  defaultMenuViewMode String  @default("list")
   landing            Json?
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt

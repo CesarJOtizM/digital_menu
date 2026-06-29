@@ -1,4 +1,8 @@
 import type { DeployConfig } from "@/config/domain/deploy-config";
+import {
+  DEFAULT_MENU_VIEW_MODE,
+  normalizeMenuViewMode,
+} from "@/menu/presentation/view-model/menu-view-mode";
 
 /**
  * Structural shape of the persisted Settings singleton row (mirrors the Prisma
@@ -17,6 +21,7 @@ export interface SettingsRow {
   locale: string;
   timezone: string;
   showCurrencySymbol: boolean;
+  defaultMenuViewMode: string;
   landing: unknown;
 }
 
@@ -34,6 +39,7 @@ export const DEFAULT_DEPLOY_CONFIG: DeployConfig = {
   locale: "en-US",
   timezone: "UTC",
   showCurrencySymbol: true,
+  defaultMenuViewMode: DEFAULT_MENU_VIEW_MODE,
   landingEnabled: false,
   landing: null,
 };
@@ -70,6 +76,7 @@ export function mapSettingsRowToConfig(row: SettingsRow | null): DeployConfig {
     locale: row.locale,
     timezone: row.timezone,
     showCurrencySymbol: row.showCurrencySymbol,
+    defaultMenuViewMode: normalizeMenuViewMode(row.defaultMenuViewMode),
     landingEnabled: resolveLandingEnabled(row.landing),
     landing: row.landing ?? null,
   };

@@ -4,8 +4,7 @@ import {
   DEV_BYPASS_COOKIE,
   hasDevBypassCookieValue,
 } from "@/shared/infrastructure/auth/dev-bypass";
-import { resolveSignIn } from "@/shared/infrastructure/auth/resolve-sign-in";
-import { getSupabaseAnonKey, getSupabaseUrl } from "./env";
+import { getSupabasePublishableKey, getSupabaseUrl } from "./env";
 
 function copySupabaseCookies(
   source: NextResponse,
@@ -26,7 +25,7 @@ export async function updateSession(request: NextRequest) {
 
   let supabaseResponse = NextResponse.next({ request });
 
-  const supabase = createServerClient(getSupabaseUrl(), getSupabaseAnonKey(), {
+  const supabase = createServerClient(getSupabaseUrl(), getSupabasePublishableKey(), {
     cookies: {
       getAll() {
         return request.cookies.getAll();
@@ -50,27 +49,14 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (isDashboard) {
-    const allowed =
-      !!user &&
-      resolveSignIn({ email: user.email }, process.env.ALLOWED_EMAILS);
+  if (isDashboard && !user) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    url.searchParams.set("error", "session_required");
 
-    if (!allowed) {
-      if (user) {
-        await supabase.auth.signOut();
-      }
-
-      const url = request.nextUrl.clone();
-      url.pathname = "/login";
-      url.searchParams.set(
-        "error",
-        user ? "unauthorized" : "session_required",
-      );
-
-      const redirectResponse = NextResponse.redirect(url);
-      copySupabaseCookies(supabaseResponse, redirectResponse);
-      return redirectResponse;
-    }
+    const redirectResponse = NextResponse.redirect(url);
+    copySupabaseCookies(supabaseResponse, redirectResponse);
+    return redirectResponse;
   }
 
   return supabaseResponse;
